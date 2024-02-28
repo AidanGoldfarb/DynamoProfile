@@ -4,6 +4,7 @@ import torch
 class ModelProfiler:
     def __init__(self,metadata):
         self.layer_times = []
+        self.profiler = None
         self.metadata = metadata
     
     def register_hooks(self,model):
@@ -29,7 +30,7 @@ class ModelProfiler:
 
 def _gen_model(model,compiled=False, gpu=False, mode="default"):
     profiler = ModelProfiler(gen_metadata(model,compiled,gpu,mode))    
-    profiler.register_hooks(model)
+    #profiler.register_hooks(model)
     
     input_data = torch.rand(1, 3, 224, 224)
 

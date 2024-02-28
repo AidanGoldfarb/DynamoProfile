@@ -19,12 +19,12 @@ INTERP = 0
 COMPILED = 1
 GPU = 2
 TRITON = 3
-RESNET_MODELS_FILENAMES = ["resnet50_default_interp.pkl","resnet50_default_compiled.pkl","resnet50_default_gpu.pkl","resnet50_default_gpu_comp.pkl"]
-GOOGLENET_MODELS_FILENAMES = ["googlenet_default_interp.pkl","googlenet_default_compiled.pkl","googlenet_default_gpu.pkl","googlenet_default_gpu_comp.pkl"]
-DENSENET_MODELS_FILENAMES = ["densenet_default_interp.pkl","densenet_default_compiled.pkl","densenet_default_gpu.pkl","densenet_default_gpu_comp.pkl"]
-SQUEEZENET_MODELS_FILENAMES = ["squeezenet1_1_default_interp.pkl","squeezenet1_1_default_compiled.pkl","squeezenet1_1_default_gpu.pkl","squeezenet1_1_default_gpu_comp.pkl"]
-ALEXNET_MODELS_FILENAMES = ["alexnet_default_interp.pkl","alexnet_default_compiled.pkl","alexnet_default_gpu.pkl","alexnet_default_gpu_comp.pkl"]
-MOBILENET_MODELS_FILENAMES = ["mobilenet_v2_default_interp.pkl","mobilenet_v2_default_compiled.pkl","mobilenet_v2_default_gpu.pkl","mobilenet_v2_default_gpu_comp.pkl"]
+RESNET_MODELS_FILENAMES = ["resnet_default_interp","resnet_default_compiled","resnet_default_gpu","resnet_default_gpu_comp"]
+GOOGLENET_MODELS_FILENAMES = ["googlenet_default_interp","googlenet_default_compiled","googlenet_default_gpu","googlenet_default_gpu_comp"]
+DENSENET_MODELS_FILENAMES = ["densenet_default_interp","densenet_default_compiled","densenet_default_gpu","densenet_default_gpu_comp"]
+SQUEEZENET_MODELS_FILENAMES = ["squeezenet1_1_default_interp","squeezenet1_1_default_compiled","squeezenet1_1_default_gpu","squeezenet1_1_default_gpu_comp"]
+ALEXNET_MODELS_FILENAMES = ["alexnet_default_interp","alexnet_default_compiled","alexnet_default_gpu","alexnet_default_gpu_comp"]
+MOBILENET_MODELS_FILENAMES = ["mobilenet_v2_default_interp","mobilenet_v2_default_compiled","mobilenet_v2_default_gpu","mobilenet_v2_default_gpu_comp"]
 """"""
 
 
@@ -33,24 +33,23 @@ GREEN = '\033[92m'
 RED = '\033[91m'
 BOLD = '\033[1m'
 ENDC = '\033[0m'
-DIR = "/data/agoldf6/DynamoBench/"
+DIR = "/data/agoldf6/DynamoProfile/"
 
-def pickle_lst(lst,filename):
-    assert type(lst) is np.ndarray
-    assert type(lst[0][0]) is np.str_
-    assert type(lst[0][1]) is np.float64
-    with open(os.path.join(DIR, "cache/"+filename+".pkl"), 'wb') as f:
-        pickle.dump(lst, f)
+# def pickle_lst(lst,filename):
+#     assert type(lst) is np.ndarray
+#     assert type(lst[0][0]) is np.str_
+#     assert type(lst[0][1]) is np.float64
+#     with open(os.path.join(DIR, "cache/"+filename+".pkl"), 'wb') as f:
+#         pickle.dump(lst, f)
 
-def unpickle_lst(filename):
-    filename = filename+".pkl"
-    with open(os.path.join(DIR, "cache/"+filename), 'rb') as f:
-        return pickle.load(f)
+# def unpickle_lst(filename):
+    # with open(os.path.join(DIR, "cache/"+filename+".pkl"), 'rb') as f:
+    #     return pickle.load(f)
 
 def is_cached(metadata):
     filename = metadata+".pkl"
     for file in os.listdir(DIR+"cache/"):
-        if filename is str(file):
+        if filename in str(file):
             return True
     return False
 
@@ -62,15 +61,14 @@ def diff(f0,f1):
 
 #pickle file to np array
 def pickle_to_np(filename):
-    return np.array(unpickle_lst(filename+".pkl"),dtype=DATA_DTYPE)
+    return np.array(unpickle_lst(filename),dtype=DATA_DTYPE)
 
 #pickle file to pd dataframe, layers numbered
 def pickle_to_df(filename):
     arr = pickle_to_np(filename)
     count = 0
-
     for i,_ in enumerate(arr):
-        arr0[i][0] = arr0[i][0]+f"_{count}" 
+        arr[i][0] = arr[i][0]+f"_{count}" 
         count+=1
 
     return pd.DataFrame(arr)
@@ -86,3 +84,4 @@ def gen_metadata(model,compiled,gpu,mode):
     else:
         metadata += "_gpu_comp"
     return metadata.lower()
+
