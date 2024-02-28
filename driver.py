@@ -1,4 +1,5 @@
 import torch
+from tqdm import tqdm
 import torchvision.models as models
 from prepare_model_and_data import *
 from runner import run
@@ -109,6 +110,7 @@ def main():
     for model in MODELS:
         for model_config in prepare_model(model):
             run(model_config,profile=True)
+        exit()
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-import warnings
+import warnings,os,time,pickle
 warnings.simplefilter(action='ignore', category=FutureWarning) #for googlenet
 
 import torchvision.models as models
@@ -39,16 +39,18 @@ def pickle_lst(lst,filename):
     assert type(lst) is np.ndarray
     assert type(lst[0][0]) is np.str_
     assert type(lst[0][1]) is np.float64
-    with open(os.path.join(DIR, "cache/"+filename), 'wb') as f:
+    with open(os.path.join(DIR, "cache/"+filename+".pkl"), 'wb') as f:
         pickle.dump(lst, f)
 
 def unpickle_lst(filename):
+    filename = filename+".pkl"
     with open(os.path.join(DIR, "cache/"+filename), 'rb') as f:
         return pickle.load(f)
 
-def is_cached(model_name,mode="default"):
+def is_cached(metadata):
+    filename = metadata+".pkl"
     for file in os.listdir(DIR+"cache/"):
-        if model_name+"_"+mode in str(file):
+        if filename is str(file):
             return True
     return False
 
