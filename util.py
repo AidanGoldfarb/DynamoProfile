@@ -1,4 +1,4 @@
-import warnings,os,time,pickle
+import warnings,os,time,pickle,typing
 warnings.simplefilter(action='ignore', category=FutureWarning) #for googlenet
 
 import torchvision.models as models
@@ -76,6 +76,12 @@ def diff(f0,f1):
         return False 
     percentagedifference = abs((float(f0) - f1) / ((f0 + f1) / 2)) * 100
     return percentagedifference #> threshold
+
+#given two df, returns a new df with the difference in 1st column as a new column
+def df_w_diff(df0,df1):
+    df = pd.merge(df0,df1,on='Type')
+    df.insert(3,"Diff",df.iloc[:,1] - df.iloc[:,2])
+    return df
 
 #pickle file to np array
 def pickle_to_np(filename):

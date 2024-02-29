@@ -30,7 +30,7 @@ def profile_all():
 
 #TODO perhaps two runs, one with autograd profiler and one with my custom one. The autograd doesnt seem to do layerwise
 def main():
-    run_all(verbose=True)
+    run_all(verbose=False)
     profile_all()
 if __name__ == "__main__":
     main()
