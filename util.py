@@ -79,7 +79,7 @@ def diff(f0,f1):
 
 #pickle file to np array
 def pickle_to_np(filename):
-    return np.array(unpickle_lst(filename),dtype=DATA_DTYPE)
+    return np.array(unpickle_obj(filename),dtype=DATA_DTYPE)
 
 #pickle file to pd dataframe, layers numbered
 def pickle_to_df(filename):

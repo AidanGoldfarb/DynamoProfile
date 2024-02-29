@@ -8,13 +8,13 @@ class ModelProfiler:
         self.metadata = metadata
     
     def register_hooks(self,model):
-        start_time = -1
+        #start_time = -1
         def pre_hook_fn(module, input):
-            start_time = time.time()
+            module.start_time = time.time()
 
         def forward_hook_fn(module, input, output):
             end_time = time.time()
-            rt = end_time - start_time
+            rt = end_time - module.start_time
             self.layer_times.append( (str(module), float(rt)) )
 
         for module in model.modules():
