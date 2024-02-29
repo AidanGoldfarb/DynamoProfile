@@ -11,14 +11,14 @@ from util import *
 # torch._dynamo.config.cache_size_limit = 8
 
 def run_all(verbose):
-    for model in tqdm(MODELS,disable=not verbose):
+    for model in tqdm(MODELS,disable=True):#not verbose):
         #autograd profiler
         for model_config in prepare_model(model,hooks=False,verbose=verbose):
-            run(model_config,profile=True)
+            run(model_config,profile=True,verbose=verbose)
         
         #custom profiler
         for model_config in prepare_model(model,hooks=True,verbose=verbose):
-            run(model_config,profile=True)
+            run(model_config,profile=True,verbose=verbose)
 
 def profile_all():
     profile(RESNET_MODELS_FILENAMES)
@@ -31,6 +31,6 @@ def profile_all():
 #TODO perhaps two runs, one with autograd profiler and one with my custom one. The autograd doesnt seem to do layerwise
 def main():
     run_all(verbose=True)
-    profile_all()
+    #profile_all()
 if __name__ == "__main__":
     main()

@@ -26,6 +26,9 @@ class ModelProfiler:
     
     def clear_layer_times(self):
         self.layer_times = []
+    
+    def __str__(self):
+        return self.metadata
 
 
 def _gen_model(model,hooks=False,compiled=False, gpu=False, mode="default"):
@@ -58,10 +61,11 @@ def prepare_model(model,hooks,verbose=False):
             _gen_model(model(), hooks=hooks, compiled=True,  gpu=True)
         )
     else:
-        print("no GPU, skipping tests")
+        if verbose:
+            print("no GPU, skipping tests")
         return (
             _gen_model(model(), hooks=hooks, compiled=False, gpu=False), 
-            _gen_model(model(), hooks=hooks, compiled=True,  gpu=False)
+            #_gen_model(model(), hooks=hooks, compiled=True,  gpu=False)
         )
 
 def prepare_all():

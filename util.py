@@ -7,6 +7,7 @@ import pandas as pd
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
+
 """
     Models
 """
@@ -38,22 +39,36 @@ ENDC = '\033[0m'
 DIR = "/Users/aidangoldfarb/Projects/DynamoProfile/"
 #DIR = "/data/agoldf6/DynamoProfile/"
 
-# def pickle_lst(lst,filename):
-#     assert type(lst) is np.ndarray
-#     assert type(lst[0][0]) is np.str_
-#     assert type(lst[0][1]) is np.float64
-#     with open(os.path.join(DIR, "cache/"+filename+".pkl"), 'wb') as f:
-#         pickle.dump(lst, f)
+def pickle_obj(obj,filename):
+    dr = "hooktraces/"
+    if "nohooks" in filename:
+        dr = "autogradtraces/"
+    else:
+        assert type(obj) is np.ndarray
+        assert type(obj[0][0]) is np.str_
+        assert type(obj[0][1]) is np.float64
+    
+    with open(os.path.join(DIR, f"cache/{dr}"+filename+".pkl"), 'wb') as f:
+        pickle.dump(obj, f)
 
-# def unpickle_lst(filename):
-    # with open(os.path.join(DIR, "cache/"+filename+".pkl"), 'rb') as f:
-    #     return pickle.load(f)
+def unpickle_obj(filename):
+    dr = "hooktraces/"
+    if "nohooks" in filename:
+        dr = "autogradtraces/"
+    with open(os.path.join(DIR, f"cache/{dr}"+filename+".pkl"), 'rb') as f:
+        return pickle.load(f)
 
 def is_cached(metadata):
-    filename = metadata+".pkl"
-    for file in os.listdir(DIR+"cache/"):
-        if filename in str(file):
-            return True
+    if "nohooks" in metadata:
+        filename=metadata+".pkl"
+        for file in os.listdir(DIR+"cache/autogradtraces/"):
+            if filename in str(file):
+                return True
+    else:
+        filename = metadata+".pkl"
+        for file in os.listdir(DIR+"cache/hooktraces/"):
+            if filename in str(file):
+                return True
     return False
 
 def diff(f0,f1):
@@ -86,7 +101,7 @@ def gen_metadata(model,hooks,compiled,gpu,mode):
         metadata += "_gpu"
     else:
         metadata += "_gpu_comp"
-    if hooks:
+    if not hooks:
         metadata += "_nohooks"
     return metadata.lower()
 
