@@ -12,7 +12,12 @@ from util import *
 
 def run_all(verbose):
     for model in tqdm(MODELS,disable=not verbose):
-        for model_config in prepare_model(model):
+        #autograd profiler
+        for model_config in prepare_model(model,hooks=False,verbose=verbose):
+            run(model_config,profile=True)
+        
+        #custom profiler
+        for model_config in prepare_model(model,hooks=True,verbose=verbose):
             run(model_config,profile=True)
 
 def profile_all():
@@ -25,7 +30,7 @@ def profile_all():
 
 #TODO perhaps two runs, one with autograd profiler and one with my custom one. The autograd doesnt seem to do layerwise
 def main():
-    run_all(verbose=False)
-    #profile_all()
+    run_all(verbose=True)
+    profile_all()
 if __name__ == "__main__":
     main()

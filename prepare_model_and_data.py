@@ -28,9 +28,10 @@ class ModelProfiler:
         self.layer_times = []
 
 
-def _gen_model(model,compiled=False, gpu=False, mode="default"):
-    profiler = ModelProfiler(gen_metadata(model,compiled,gpu,mode))    
-    #profiler.register_hooks(model)
+def _gen_model(model,hooks=False,compiled=False, gpu=False, mode="default"):
+    profiler = ModelProfiler(gen_metadata(model,hooks,compiled,gpu,mode))    
+    if hooks:
+        profiler.register_hooks(model)
     
     input_data = torch.rand(1, 3, 224, 224)
 
@@ -48,13 +49,20 @@ def _gen_model(model,compiled=False, gpu=False, mode="default"):
     TODO: add mode support. As of now just default, as few 
     differences were observed with other modes
 """
-def prepare_model(model):
-    return (
-        _gen_model(model(), compiled=False, gpu=False), 
-        _gen_model(model(), compiled=True,  gpu=False), 
-        _gen_model(model(), compiled=False, gpu=True), 
-        _gen_model(model(), compiled=True,  gpu=True)
-    )
+def prepare_model(model,hooks,verbose=False):
+    if torch.cuda.is_available(): 
+        return (
+            _gen_model(model(), hooks=hooks, compiled=False, gpu=False), 
+            _gen_model(model(), hooks=hooks, compiled=True,  gpu=False), 
+            _gen_model(model(), hooks=hooks, compiled=False, gpu=True), 
+            _gen_model(model(), hooks=hooks, compiled=True,  gpu=True)
+        )
+    else:
+        print("no GPU, skipping tests")
+        return (
+            _gen_model(model(), hooks=hooks, compiled=False, gpu=False), 
+            _gen_model(model(), hooks=hooks, compiled=True,  gpu=False)
+        )
 
 def prepare_all():
     pass

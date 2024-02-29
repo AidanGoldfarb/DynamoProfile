@@ -3,15 +3,18 @@ import torch
 
 def _run(model,input_data,profiler,reps):
     use_cuda = "gpu" in profiler.metadata
+    autograd = "nohooks" in profiler.metadata
 
     for _ in range(reps):
-        #profiler.clear_layer_times()
         with torch.no_grad():
-            with torch.autograd.profiler.profile(use_cuda=use_cuda) as prof:
+            if autograd:
+                with torch.autograd.profiler.profile(use_cuda=use_cuda) as prof:
+                    model(input_data)
+                profiler.prof = prof
+            else:
+                profiler.clear_layer_times()
                 model(input_data)
-            profiler.prof = prof
-    print(profiler.prof.total_average())
-    exit()
+
 """
     Runs a model
 """

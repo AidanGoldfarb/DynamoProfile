@@ -5,6 +5,8 @@ import torchvision.models as models
 import numpy as np
 import pandas as pd
 
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 """
     Models
 """
@@ -33,7 +35,8 @@ GREEN = '\033[92m'
 RED = '\033[91m'
 BOLD = '\033[1m'
 ENDC = '\033[0m'
-DIR = "/data/agoldf6/DynamoProfile/"
+DIR = "/Users/aidangoldfarb/Projects/DynamoProfile/"
+#DIR = "/data/agoldf6/DynamoProfile/"
 
 # def pickle_lst(lst,filename):
 #     assert type(lst) is np.ndarray
@@ -73,7 +76,7 @@ def pickle_to_df(filename):
 
     return pd.DataFrame(arr)
 
-def gen_metadata(model,compiled,gpu,mode):
+def gen_metadata(model,hooks,compiled,gpu,mode):
     metadata = model.__class__.__name__ + "_"+mode
     if not compiled and not gpu:
         metadata += "_interp"
@@ -83,5 +86,7 @@ def gen_metadata(model,compiled,gpu,mode):
         metadata += "_gpu"
     else:
         metadata += "_gpu_comp"
+    if hooks:
+        metadata += "_nohooks"
     return metadata.lower()
 
