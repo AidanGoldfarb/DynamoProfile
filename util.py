@@ -25,9 +25,9 @@ TRITON = 3
 RESNET_MODELS_FILENAMES = ["resnet_default_interp","resnet_default_compiled","resnet_default_gpu","resnet_default_gpu_comp"]
 GOOGLENET_MODELS_FILENAMES = ["googlenet_default_interp","googlenet_default_compiled","googlenet_default_gpu","googlenet_default_gpu_comp"]
 DENSENET_MODELS_FILENAMES = ["densenet_default_interp","densenet_default_compiled","densenet_default_gpu","densenet_default_gpu_comp"]
-SQUEEZENET_MODELS_FILENAMES = ["squeezenet1_1_default_interp","squeezenet1_1_default_compiled","squeezenet1_1_default_gpu","squeezenet1_1_default_gpu_comp"]
+SQUEEZENET_MODELS_FILENAMES = ["squeezenet_default_interp","squeezenet_default_compiled","squeezenet_default_gpu","squeezenet_default_gpu_comp"]
 ALEXNET_MODELS_FILENAMES = ["alexnet_default_interp","alexnet_default_compiled","alexnet_default_gpu","alexnet_default_gpu_comp"]
-MOBILENET_MODELS_FILENAMES = ["mobilenet_v2_default_interp","mobilenet_v2_default_compiled","mobilenet_v2_default_gpu","mobilenet_v2_default_gpu_comp"]
+MOBILENET_MODELS_FILENAMES = ["mobilenetv2_default_interp","mobilenetv2_default_compiled","mobilenetv2_default_gpu","mobilenetv2_default_gpu_comp"]
 """"""
 
 
@@ -36,8 +36,8 @@ GREEN = '\033[92m'
 RED = '\033[91m'
 BOLD = '\033[1m'
 ENDC = '\033[0m'
-DIR = "/Users/aidangoldfarb/Projects/DynamoProfile/"
-#DIR = "/data/agoldf6/DynamoProfile/"
+#DIR = "/Users/aidangoldfarb/Projects/DynamoProfile/"
+DIR = "/data/agoldf6/DynamoProfile/"
 
 def pickle_obj(obj,filename):
     dr = "hooktraces/"
@@ -94,8 +94,11 @@ def pickle_to_df(filename):
     for i,_ in enumerate(arr):
         arr[i][0] = arr[i][0]+f"_{count}" 
         count+=1
-
-    return pd.DataFrame(arr)
+    
+    df = pd.DataFrame(arr)
+    column_name = "Time_"+filename.split('_')[-1]
+    df.rename(columns={'Type': 'Layer', 'Time': column_name}, inplace=True)
+    return df
 
 def gen_metadata(model,hooks,compiled,gpu,mode):
     metadata = model.__class__.__name__ + "_"+mode

@@ -22,15 +22,15 @@ def run_all(verbose):
 
 def profile_all():
     profile(RESNET_MODELS_FILENAMES)
-    # profile(GOOGLENET_MODELS_FILENAMES)
-    # profile(DENSENET_MODELS_FILENAMES)
-    # profile(SQUEEZENET_MODELS_FILENAMES)
-    # profile(ALEXNET_MODELS_FILENAMES)
-    # profile(MOBILENET_MODELS_FILENAMES)
+    profile(GOOGLENET_MODELS_FILENAMES)
+    profile(DENSENET_MODELS_FILENAMES)
+    profile(SQUEEZENET_MODELS_FILENAMES)
+    profile(ALEXNET_MODELS_FILENAMES)
+    profile(MOBILENET_MODELS_FILENAMES)
 
 #TODO perhaps two runs, one with autograd profiler and one with my custom one. The autograd doesnt seem to do layerwise
 def main():
-    run_all(verbose=False)
+    #run_all(verbose=False)
     profile_all()
 if __name__ == "__main__":
     main()
