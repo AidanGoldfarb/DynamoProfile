@@ -1,4 +1,5 @@
 from util import *
+from plotter import *
 
 """
     Finds the optimal runtime given different configurations
@@ -19,9 +20,17 @@ def oracle_runtime(dfs):
 def runtime(df):
     return df.iloc[:,1].sum()
 
-def plot_rt_diff(df0,df1,title=""):
+def plot_rt_diff(df0,df1,config="",modelname="",filter=None):
+    title = modelname+"_"+config
+    title = title.replace(" ","_")
+    config = config.replace(" ","_")
     df = df_w_speedup(df0,df1)
-    density_plot_model(df,'Speedup',title)
+    if filter: 
+        savepath = DIR + f"figs/{config}/{filter.lower()}_only/"
+        df = df[df['Layer'].str.startswith(filter)]
+    else:
+        savepath = DIR + f"figs/{config}/all/"
+    density_plot_model(df,'Speedup',title,savepath)
 
 def profile(filenames):
     modelname = filenames[0].split('_')[0]
@@ -36,7 +45,7 @@ def profile(filenames):
     # print(f"\ttriton:   {runtime(triton_df):.4}")
     # print(f"\toracle:   {oracle_runtime([interp_df,compiled_df,gpu_df,triton_df]):.4}")
     # print(oracle_runtime([interp_df,compiled_df,gpu_df,triton_df]))
-    
-    # plot_rt_diff(gpu_df,triton_df,title= modelname +" gpu vs triton")
+    #plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton")
+    plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton",filter="Conv")
     # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
     

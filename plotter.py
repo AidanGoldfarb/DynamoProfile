@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 """
     Plot density of 'var'
 """
-def density_plot_model(data, var: str, title=""):
+def density_plot_model(data, var: str, title="", savepath=""):
     sns.displot(data, x=var, kind="kde")
     plt.axvline(1, color='red', linestyle="--")
     plt.title(title)
-    plt.savefig("figs/"+title.replace(" ","_"), bbox_inches='tight')
+    plt.savefig(savepath+title, bbox_inches='tight')
 
 """
     figure out how to combine all models

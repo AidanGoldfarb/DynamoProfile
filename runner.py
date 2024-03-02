@@ -4,8 +4,6 @@ import torch
 def _run(model,input_data,profiler,reps):
     use_cuda = "gpu" in profiler.metadata
     autograd = "nohooks" in profiler.metadata
-    print(profiler.metadata)
-
     for _ in range(reps):
         with torch.no_grad():
             if autograd:

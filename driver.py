@@ -16,10 +16,11 @@ def run_all(verbose):
         #autograd profiler
         for model_config in prepare_model(model,hooks=False,verbose=verbose):
             run(model_config,profile=True,verbose=verbose)
-        
+
         #custom profiler
         for model_config in prepare_model(model,hooks=True,verbose=verbose):
             run(model_config,profile=True,verbose=verbose)
+
 def profile_all():
     profile(RESNET_MODELS_FILENAMES)
     profile(GOOGLENET_MODELS_FILENAMES)
@@ -28,9 +29,9 @@ def profile_all():
     profile(ALEXNET_MODELS_FILENAMES)
     profile(MOBILENET_MODELS_FILENAMES)
 
-#TODO perhaps two runs, one with autograd profiler and one with my custom one. The autograd doesnt seem to do layerwise
+#TODO 
 def main():
-    run_all(verbose=True)
-    #profile_all()
+    #run_all(verbose=True)
+    profile_all()
 if __name__ == "__main__":
     main()
