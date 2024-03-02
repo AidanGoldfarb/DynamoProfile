@@ -1,5 +1,4 @@
 from util import *
-from plotter import density_plot
 
 """
     Finds the optimal runtime given different configurations
@@ -20,21 +19,24 @@ def oracle_runtime(dfs):
 def runtime(df):
     return df.iloc[:,1].sum()
 
-def plot_rt_diff(df0,df1):
-    df = df_w_diff(df0,df1)
-    density_plot(df,'Diff')
+def plot_rt_diff(df0,df1,title=""):
+    df = df_w_speedup(df0,df1)
+    density_plot_model(df,'Speedup',title)
 
 def profile(filenames):
+    modelname = filenames[0].split('_')[0]
     interp_df = pickle_to_df(filenames[INTERP])
     compiled_df = pickle_to_df(filenames[COMPILED])
     gpu_df = pickle_to_df(filenames[GPU])
     triton_df = pickle_to_df(filenames[TRITON])
-    print(filenames[0].split('_')[0].upper())
-    print(f"\tinterp:   {runtime(interp_df):.4}")
-    print(f"\tcompiled: {runtime(compiled_df):.4}")
-    print(f"\tgpu:      {runtime(gpu_df):.4}")
-    print(f"\ttriton:   {runtime(triton_df):.4}")
-    print(f"\toracle:   {oracle_runtime([interp_df,compiled_df,gpu_df,triton_df]):.4}")
+    # print(filenames[0].split('_')[0].upper())
+    # print(f"\tinterp:   {runtime(interp_df):.4}")
+    # print(f"\tcompiled: {runtime(compiled_df):.4}")
+    # print(f"\tgpu:      {runtime(gpu_df):.4}")
+    # print(f"\ttriton:   {runtime(triton_df):.4}")
+    # print(f"\toracle:   {oracle_runtime([interp_df,compiled_df,gpu_df,triton_df]):.4}")
     # print(oracle_runtime([interp_df,compiled_df,gpu_df,triton_df]))
-    # plot_rt_diff(interp_df,interp_df)
+    
+    # plot_rt_diff(gpu_df,triton_df,title= modelname +" gpu vs triton")
+    # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
     

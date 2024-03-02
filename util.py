@@ -78,9 +78,9 @@ def diff(f0,f1):
     return percentagedifference #> threshold
 
 #given two df, returns a new df with the difference in 1st column as a new column
-def df_w_diff(df0,df1):
-    df = pd.merge(df0,df1,on='Type')
-    df.insert(3,"Diff",df.iloc[:,1] - df.iloc[:,2])
+def df_w_speedup(df0,df1):
+    df = pd.merge(df0,df1,on='Layer')
+    df.insert(3,"Speedup", df.iloc[:,2]/df.iloc[:,1])
     return df
 
 #pickle file to np array

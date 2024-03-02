@@ -17,9 +17,11 @@ class ModelProfiler:
             rt = end_time - module.start_time
             self.layer_times.append( (str(module), float(rt)) )
 
+        count = 0
         for module in model.modules():
             module.register_forward_pre_hook(pre_hook_fn)
             module.register_forward_hook(forward_hook_fn)
+        exit()
 
     def get_layer_times(self):
         return np.array(self.layer_times, dtype=DATA_DTYPE)
