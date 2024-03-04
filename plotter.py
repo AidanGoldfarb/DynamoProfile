@@ -42,12 +42,14 @@ def bar_plot(xs, ys):
 """
     Plot density of 'var'
 """
-def density_plot_model(data, var: str, title="", savepath=""):
+def density_plot_model(data, var: str, title="", savepath="", verbose=False):
     sns.displot(data, x=var, kind="kde")
     plt.axvline(1, color='red', linestyle="--")
     plt.title(title)
     plt.savefig(savepath+title, bbox_inches='tight')
-    print(f"wrote fig to {savepath+title}")
+    if verbose:
+        print(f"wrote fig to {savepath+title}")
+    plt.close()
 
 """
     figure out how to combine all models

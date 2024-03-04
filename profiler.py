@@ -21,11 +21,11 @@ def oracle_runtime(dfs):
 def runtime(df):
     return df.iloc[:,1].sum()
 
-def plot_rt_diff(df0,df1,autograd,config="",modelname="",filter=None):
+def plot_rt_diff(df0,df1,autograd,config="",modelname="",filter=None,verbose=False):
     title = modelname+"_"+config
     title = title.replace(" ","_")
     config = config.replace(" ","_")
-    df = df_w_speedup(df0,df1,autograd).dropna(axis=0, subset='Speedup')
+    df = df_w_speedup(df0,df1,config,autograd).dropna(axis=0, subset='Speedup')
     if filter: 
         savepath = DIR + f"figs/{config}/{filter.lower()}_only/"
         if autograd:
@@ -36,7 +36,7 @@ def plot_rt_diff(df0,df1,autograd,config="",modelname="",filter=None):
         savepath = DIR + f"figs/{config}/all/"
     if autograd:
         title = title+"_autograd"
-    density_plot_model(df,'Speedup',title,savepath)
+    density_plot_model(df,'Speedup',title,savepath,verbose)
 
 def profile_hooktraces(filenames):
     modelname = filenames[0].split('_')[0]
@@ -57,12 +57,15 @@ def profile_hooktraces(filenames):
     plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton",filter="Conv")
     # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
     
-def profile_autogradtraces(filenames):
+def profile_autogradtraces(filenames,verbose=False):
     modelname = filenames[0].split('_')[0]
     interp_df = parse_autograd_json(filenames[INTERP]+"_nohooks.trace")
     compiled_df = parse_autograd_json(filenames[COMPILED]+"_nohooks.trace")
     gpu_df = parse_autograd_json(filenames[GPU]+"_nohooks.trace")
     triton_df = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
     
-    plot_rt_diff(gpu_df,triton_df,autograd=True, modelname=modelname,config="gpu vs triton",filter="conv")
-    exit()
+    plot_rt_diff(interp_df,compiled_df,autograd=True, modelname=modelname,config="interp vs cpp",verbose=verbose)
+    plot_rt_diff(gpu_df,triton_df,autograd=True, modelname=modelname,config="gpu vs triton",verbose=verbose)
+
+    plot_rt_diff(interp_df,compiled_df,autograd=True, modelname=modelname,config="interp vs cpp",filter="conv",verbose=verbose)
+    plot_rt_diff(gpu_df,triton_df,autograd=True, modelname=modelname,config="gpu vs triton",filter="conv",verbose=verbose)

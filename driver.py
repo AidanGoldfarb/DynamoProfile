@@ -29,17 +29,17 @@ def profile_all_hooktraces():
     profile_hooktraces(ALEXNET_MODELS_FILENAMES)
     profile_hooktraces(MOBILENET_MODELS_FILENAMES)
 
-def profile_all_autgradtraces():
-    profile_autogradtraces(RESNET_MODELS_FILENAMES)
-    profile_autogradtraces(GOOGLENET_MODELS_FILENAMES)
-    profile_autogradtraces(DENSENET_MODELS_FILENAMES)
-    profile_autogradtraces(SQUEEZENET_MODELS_FILENAMES)
-    profile_autogradtraces(ALEXNET_MODELS_FILENAMES)
-    profile_autogradtraces(MOBILENET_MODELS_FILENAMES)
+def profile_all_autgradtraces(verbose=False):
+    profile_autogradtraces(RESNET_MODELS_FILENAMES,verbose=verbose)
+    profile_autogradtraces(GOOGLENET_MODELS_FILENAMES,verbose=verbose)
+    profile_autogradtraces(DENSENET_MODELS_FILENAMES,verbose=verbose)
+    profile_autogradtraces(SQUEEZENET_MODELS_FILENAMES,verbose=verbose)
+    profile_autogradtraces(ALEXNET_MODELS_FILENAMES,verbose=verbose)
+    profile_autogradtraces(MOBILENET_MODELS_FILENAMES,verbose=verbose)
 #TODO 
 def main():
     #run_all(verbose=True)
     #profile_all_hooktraces()
-    profile_all_autgradtraces()
+    profile_all_autgradtraces(verbose=True)
 if __name__ == "__main__":
     main()
