@@ -14,8 +14,9 @@ def _run(model,input_data,profiler,reps):
                 profiler.clear_layer_times()
                 model(input_data)
     if autograd:
-        #profiler.prof.export_chrome_trace(f"cache/autogradtraces/{profiler.metadata}.trace")
-        pickle_obj(profiler.prof.key_averages(),profiler.metadata)
+        profiler.prof.export_chrome_trace(f"cache/autogradtraces/{profiler.metadata}.trace")
+        #print(profiler.prof.key_averages().table())
+        #pickle_obj(profiler.prof.key_averages(),profiler.metadata)
     else:
         pickle_obj(profiler.get_layer_times(),profiler.metadata)
 

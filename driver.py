@@ -21,17 +21,25 @@ def run_all(verbose):
         for model_config in prepare_model(model,hooks=True,verbose=verbose):
             run(model_config,profile=True,verbose=verbose)
 
-def profile_all():
-    profile(RESNET_MODELS_FILENAMES)
-    profile(GOOGLENET_MODELS_FILENAMES)
-    profile(DENSENET_MODELS_FILENAMES)
-    profile(SQUEEZENET_MODELS_FILENAMES)
-    profile(ALEXNET_MODELS_FILENAMES)
-    profile(MOBILENET_MODELS_FILENAMES)
+def profile_all_hooktraces():
+    profile_hooktraces(RESNET_MODELS_FILENAMES)
+    profile_hooktraces(GOOGLENET_MODELS_FILENAMES)
+    profile_hooktraces(DENSENET_MODELS_FILENAMES)
+    profile_hooktraces(SQUEEZENET_MODELS_FILENAMES)
+    profile_hooktraces(ALEXNET_MODELS_FILENAMES)
+    profile_hooktraces(MOBILENET_MODELS_FILENAMES)
 
+def profile_all_autgradtraces():
+    profile_autogradtraces(RESNET_MODELS_FILENAMES)
+    profile_autogradtraces(GOOGLENET_MODELS_FILENAMES)
+    profile_autogradtraces(DENSENET_MODELS_FILENAMES)
+    profile_autogradtraces(SQUEEZENET_MODELS_FILENAMES)
+    profile_autogradtraces(ALEXNET_MODELS_FILENAMES)
+    profile_autogradtraces(MOBILENET_MODELS_FILENAMES)
 #TODO 
 def main():
     #run_all(verbose=True)
-    profile_all()
+    #profile_all_hooktraces()
+    profile_all_autgradtraces()
 if __name__ == "__main__":
     main()

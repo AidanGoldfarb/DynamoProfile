@@ -1,4 +1,4 @@
-import warnings,os,time,pickle,typing
+import warnings,os,time,pickle,typing,json
 warnings.simplefilter(action='ignore', category=FutureWarning) #for googlenet
 
 import torchvision.models as models
@@ -22,12 +22,12 @@ INTERP = 0
 COMPILED = 1
 GPU = 2
 TRITON = 3
-RESNET_MODELS_FILENAMES = ["resnet_default_interp","resnet_default_compiled","resnet_default_gpu","resnet_default_gpu_comp"]
-GOOGLENET_MODELS_FILENAMES = ["googlenet_default_interp","googlenet_default_compiled","googlenet_default_gpu","googlenet_default_gpu_comp"]
-DENSENET_MODELS_FILENAMES = ["densenet_default_interp","densenet_default_compiled","densenet_default_gpu","densenet_default_gpu_comp"]
-SQUEEZENET_MODELS_FILENAMES = ["squeezenet_default_interp","squeezenet_default_compiled","squeezenet_default_gpu","squeezenet_default_gpu_comp"]
-ALEXNET_MODELS_FILENAMES = ["alexnet_default_interp","alexnet_default_compiled","alexnet_default_gpu","alexnet_default_gpu_comp"]
-MOBILENET_MODELS_FILENAMES = ["mobilenetv2_default_interp","mobilenetv2_default_compiled","mobilenetv2_default_gpu","mobilenetv2_default_gpu_comp"]
+RESNET_MODELS_FILENAMES = ["resnet_default_interp","resnet_default_compiled","resnet_default_gpu","resnet_default_triton"]
+GOOGLENET_MODELS_FILENAMES = ["googlenet_default_interp","googlenet_default_compiled","googlenet_default_gpu","googlenet_default_triton"]
+DENSENET_MODELS_FILENAMES = ["densenet_default_interp","densenet_default_compiled","densenet_default_gpu","densenet_default_triton"]
+SQUEEZENET_MODELS_FILENAMES = ["squeezenet_default_interp","squeezenet_default_compiled","squeezenet_default_gpu","squeezenet_default_triton"]
+ALEXNET_MODELS_FILENAMES = ["alexnet_default_interp","alexnet_default_compiled","alexnet_default_gpu","alexnet_default_triton"]
+MOBILENET_MODELS_FILENAMES = ["mobilenetv2_default_interp","mobilenetv2_default_compiled","mobilenetv2_default_gpu","mobilenetv2_default_triton"]
 """"""
 
 
@@ -78,18 +78,31 @@ def diff(f0,f1):
     return percentagedifference #> threshold
 
 #given two df, returns a new df with the difference in 1st column as a new column
-def df_w_speedup(df0,df1):
-    df = pd.merge(df0,df1,on='Layer')
-    df.insert(3,"Speedup", df.iloc[:,1]/df.iloc[:,2])
+def df_w_speedup(df0,df1,autograd=False):
+    if autograd:
+        print(df0['Layer'][df0['Layer'].isin(df1['Layer'])])
+        exit()
+        df = pd.merge(df0,df1,on='Layer', suffixes=[df0.columns[6].split('_')[1], df1.columns[6].split('_')[1]])
+        #df.insert(7,"Speedup", df.iloc[:,]/df.iloc[:,])
+        exit()
+    else:
+        df = pd.merge(df0,df1,on='Layer')
+        df.insert(3,"Speedup", df.iloc[:,1]/df.iloc[:,2])
     return df
 
 #pickle file to np array
 def pickle_to_np(filename):
-    return np.array(unpickle_obj(filename),dtype=DATA_DTYPE)
+    if "_nohooks" in filename:
+        return np.array(unpickle_obj(filename))
+    else:
+        return np.array(unpickle_obj(filename),dtype=DATA_DTYPE)
 
 #pickle file to pd dataframe, layers numbered
 def pickle_to_df(filename):
     arr = pickle_to_np(filename)
+    if "_nohooks" in filename:
+        return pd.DataFrame(arr)
+
     count = 0
     for i,_ in enumerate(arr):
         arr[i][0] = arr[i][0]+f"_{count}" 
@@ -109,8 +122,25 @@ def gen_metadata(model,hooks,compiled,gpu,mode):
     elif not compiled and gpu:
         metadata += "_gpu"
     else:
-        metadata += "_gpu_comp"
+        metadata += "_triton"
     if not hooks:
         metadata += "_nohooks"
     return metadata.lower()
 
+def parse_autograd_json(filename):
+    filename = DIR + "cache/autogradtraces/" + filename
+    with open(filename,'r') as file:
+        profiler_data = json.load(file)
+        df = pd.json_normalize(profiler_data["traceEvents"])
+        df.rename(columns={'name':'Layer','dur':f'dur_{filename.split("_")[2]}'}, inplace=True)
+        
+        #TODO UNIQUIFY LAYERS
+        df['Layer_Count'] = df.groupby('Layer').cumcount() + 1
+        df['Unique_Layer'] = df['Layer'] + '_' + df['Layer_Count'].astype(str)
+
+
+        df.drop(columns=['Layer_Count'], inplace=True)
+        return df
+
+def df_filter(df,column,keep):
+    return df[df[column].str.contains(keep, case=False)]
