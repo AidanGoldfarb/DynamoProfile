@@ -25,12 +25,17 @@ def plot_rt_diff(df0,df1,autograd,config="",modelname="",filter=None):
     title = modelname+"_"+config
     title = title.replace(" ","_")
     config = config.replace(" ","_")
-    df = df_w_speedup(df0,df1,autograd)
+    df = df_w_speedup(df0,df1,autograd).dropna(axis=0, subset='Speedup')
     if filter: 
         savepath = DIR + f"figs/{config}/{filter.lower()}_only/"
-        df = df[df['Layer'].str.startswith(filter)]
+        if autograd:
+            df = df[df['Layer'].str.startswith("aten::"+filter)]
+        else:
+            df = df[df['Layer'].str.startswith(filter)]
     else:
         savepath = DIR + f"figs/{config}/all/"
+    if autograd:
+        title = title+"_autograd"
     density_plot_model(df,'Speedup',title,savepath)
 
 def profile_hooktraces(filenames):
@@ -59,5 +64,5 @@ def profile_autogradtraces(filenames):
     gpu_df = parse_autograd_json(filenames[GPU]+"_nohooks.trace")
     triton_df = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
     
-    plot_rt_diff(gpu_df,triton_df,autograd=True, modelname=modelname,config="gpu vs triton",filter="Conv")
+    plot_rt_diff(gpu_df,triton_df,autograd=True, modelname=modelname,config="gpu vs triton",filter="conv")
     exit()

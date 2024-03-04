@@ -47,6 +47,7 @@ def density_plot_model(data, var: str, title="", savepath=""):
     plt.axvline(1, color='red', linestyle="--")
     plt.title(title)
     plt.savefig(savepath+title, bbox_inches='tight')
+    print(f"wrote fig to {savepath+title}")
 
 """
     figure out how to combine all models

@@ -80,11 +80,8 @@ def diff(f0,f1):
 #given two df, returns a new df with the difference in 1st column as a new column
 def df_w_speedup(df0,df1,autograd=False):
     if autograd:
-        print(df0['Layer'][df0['Layer'].isin(df1['Layer'])])
-        exit()
-        df = pd.merge(df0,df1,on='Layer', suffixes=[df0.columns[6].split('_')[1], df1.columns[6].split('_')[1]])
-        #df.insert(7,"Speedup", df.iloc[:,]/df.iloc[:,])
-        exit()
+        df = pd.merge(df0,df1,on='Layer', suffixes=["_"+df0.columns[6].split('_')[1], "_"+df1.columns[6].split('_')[1]])
+        df.insert(7,"Speedup", df['dur_gpu']/df['dur_triton'])
     else:
         df = pd.merge(df0,df1,on='Layer')
         df.insert(3,"Speedup", df.iloc[:,1]/df.iloc[:,2])
@@ -134,11 +131,8 @@ def parse_autograd_json(filename):
         df = pd.json_normalize(profiler_data["traceEvents"])
         df.rename(columns={'name':'Layer','dur':f'dur_{filename.split("_")[2]}'}, inplace=True)
         
-        #TODO UNIQUIFY LAYERS
         df['Layer_Count'] = df.groupby('Layer').cumcount() + 1
-        df['Unique_Layer'] = df['Layer'] + '_' + df['Layer_Count'].astype(str)
-
-
+        df['Layer'] = df['Layer'] + '_' + df['Layer_Count'].astype(str)
         df.drop(columns=['Layer_Count'], inplace=True)
         return df
 
