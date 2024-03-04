@@ -36,10 +36,11 @@ def profile_all_autgradtraces(verbose=False):
     profile_autogradtraces(SQUEEZENET_MODELS_FILENAMES,verbose=verbose)
     profile_autogradtraces(ALEXNET_MODELS_FILENAMES,verbose=verbose)
     profile_autogradtraces(MOBILENET_MODELS_FILENAMES,verbose=verbose)
-#TODO 
+
+#TODO gen figs with all models togeether for certain configs 
 def main():
     #run_all(verbose=True)
-    #profile_all_hooktraces()
-    profile_all_autgradtraces(verbose=True)
+    profile_all_hooktraces()
+    #profile_all_autgradtraces(verbose=True)
 if __name__ == "__main__":
     main()

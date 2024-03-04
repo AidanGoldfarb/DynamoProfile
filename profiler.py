@@ -41,11 +41,17 @@ def plot_rt_diff(df0,df1,autograd,config="",modelname="",filter=None,verbose=Fal
 def profile_hooktraces(filenames):
     modelname = filenames[0].split('_')[0]
     interp_df = pickle_to_df(filenames[INTERP])
-    compiled_df = pickle_to_df(filenames[COMPILED])
+    cpp_df = pickle_to_df(filenames[COMPILED])
     gpu_df = pickle_to_df(filenames[GPU])
     triton_df = pickle_to_df(filenames[TRITON])
 
+    interp_rt = runtime(interp_df)
+    cpp_rt = runtime(cpp_df)
+    gpu_rt = runtime(gpu_df)
+    triton_rt = runtime(triton_df)
+    oracle_rt = oracle_runtime([interp_df,cpp_df,gpu_df,triton_df])
 
+    bar_plot(["interp","cpp","gpu","triton","oracle"],[interp_rt,cpp_rt,gpu_rt,triton_rt,oracle_rt], modelname)
     # print(filenames[0].split('_')[0].upper())
     # print(f"\tinterp:   {runtime(interp_df):.4}")
     # print(f"\tcompiled: {runtime(compiled_df):.4}")
@@ -53,12 +59,13 @@ def profile_hooktraces(filenames):
     # print(f"\ttriton:   {runtime(triton_df):.4}")
     # print(f"\toracle:   {oracle_runtime([interp_df,compiled_df,gpu_df,triton_df]):.4}")
     # print(oracle_runtime([interp_df,compiled_df,gpu_df,triton_df]))
-    #plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton")
-    plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton",filter="Conv")
+    # plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton")
+    # plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton",filter="Conv")
     # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
     
 def profile_autogradtraces(filenames,verbose=False):
     modelname = filenames[0].split('_')[0]
+    
     interp_df = parse_autograd_json(filenames[INTERP]+"_nohooks.trace")
     compiled_df = parse_autograd_json(filenames[COMPILED]+"_nohooks.trace")
     gpu_df = parse_autograd_json(filenames[GPU]+"_nohooks.trace")
