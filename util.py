@@ -88,6 +88,13 @@ def df_w_speedup(df0,df1,config,autograd=False):
         df.insert(3,"Speedup", df.iloc[:,1]/df.iloc[:,2])
     return df
 
+def merge_frames(dfs):
+    assert len(dfs) > 0
+    res = dfs[0]
+    for df in dfs[1:]:
+        res = pd.merge(res,df, on='Layer')
+    return res
+
 #pickle file to np array
 def pickle_to_np(filename):
     if "_nohooks" in filename:

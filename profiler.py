@@ -21,6 +21,18 @@ def oracle_runtime(dfs):
 def runtime(df):
     return df.iloc[:,1].sum()
 
+def find_best_device_for_layers(dfs):
+    res = {}
+    df = merge_frames(dfs)
+    
+    df['Layer_Modified'] = df['Layer'].str.split("(").str[0]
+    min_value_columns = df.drop(columns=['Layer', 'Layer_Modified']).idxmin(axis=1)
+    df['MinValueColumn'] = min_value_columns
+    dict = df.groupby('Layer_Modified')['MinValueColumn'].agg(lambda x: x.iloc[0]).to_dict()
+    for k,v in dict.items():
+        print(k,v)
+        
+
 def plot_rt_diff(df0,df1,autograd,config="",modelname="",filter=None,verbose=False):
     title = modelname+"_"+config
     title = title.replace(" ","_")
@@ -45,13 +57,21 @@ def profile_hooktraces(filenames):
     gpu_df = pickle_to_df(filenames[GPU])
     triton_df = pickle_to_df(filenames[TRITON])
 
-    interp_rt = runtime(interp_df)
-    cpp_rt = runtime(cpp_df)
-    gpu_rt = runtime(gpu_df)
-    triton_rt = runtime(triton_df)
-    oracle_rt = oracle_runtime([interp_df,cpp_df,gpu_df,triton_df])
+    """
+        Best device per layer
+    """
+    dict = find_best_device_for_layers([interp_df,cpp_df,gpu_df,triton_df])
 
-    bar_plot(["interp","cpp","gpu","triton","oracle"],[interp_rt,cpp_rt,gpu_rt,triton_rt,oracle_rt], modelname)
+    """
+        Runtime
+    """
+    # interp_rt = runtime(interp_df)
+    # cpp_rt = runtime(cpp_df)
+    # gpu_rt = runtime(gpu_df)
+    # triton_rt = runtime(triton_df)
+    # oracle_rt = oracle_runtime([interp_df,cpp_df,gpu_df,triton_df])
+
+    # bar_plot(["interp","cpp","gpu","triton","oracle"],[interp_rt,cpp_rt,gpu_rt,triton_rt,oracle_rt], modelname)
     # print(filenames[0].split('_')[0].upper())
     # print(f"\tinterp:   {runtime(interp_df):.4}")
     # print(f"\tcompiled: {runtime(compiled_df):.4}")
