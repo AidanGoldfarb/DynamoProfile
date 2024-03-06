@@ -39,8 +39,8 @@ def profile_all_autgradtraces(verbose=False):
 
 #TODO gen figs with all models togeether for certain configs 
 def main():
-    #run_all(verbose=True)
-    profile_all_hooktraces()
-    #profile_all_autgradtraces(verbose=True)
+    #run_all(verbose=False)
+    #profile_all_hooktraces()
+    profile_all_autgradtraces(verbose=False)
 if __name__ == "__main__":
     main()

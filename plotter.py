@@ -12,7 +12,7 @@ def bar_plot(xs, ys, title):
     # Number of bar groups
     plt.bar(xs,ys,color="teal")
     plt.xlabel("Config")
-    plt.ylabel("Runtime [sec]")
+    plt.ylabel("Runtime [μs]")
     plt.title(title)
     plt.savefig(DIR + "figs/rt/"+title, bbox_inches='tight')
 

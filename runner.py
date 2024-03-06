@@ -7,7 +7,7 @@ def _run(model,input_data,profiler,reps):
     for _ in range(reps):
         with torch.no_grad():
             if autograd:
-                with torch.autograd.profiler.profile(use_cuda=use_cuda) as prof:
+                with torch.autograd.profiler.profile(use_cuda=use_cuda,record_shapes=True) as prof:
                     model(input_data)
                 profiler.prof = prof
             else:

@@ -22,6 +22,7 @@ INTERP = 0
 COMPILED = 1
 GPU = 2
 TRITON = 3
+CONFIG_MAP = {0:"interp",1:"cpp",2:"gpu",3:"triton"}
 RESNET_MODELS_FILENAMES = ["resnet_default_interp","resnet_default_cpp","resnet_default_gpu","resnet_default_triton"]
 GOOGLENET_MODELS_FILENAMES = ["googlenet_default_interp","googlenet_default_cpp","googlenet_default_gpu","googlenet_default_triton"]
 DENSENET_MODELS_FILENAMES = ["densenet_default_interp","densenet_default_cpp","densenet_default_gpu","densenet_default_triton"]
@@ -78,14 +79,10 @@ def diff(f0,f1):
     return percentagedifference #> threshold
 
 #given two df, returns a new df with the difference in 1st column as a new column
-def df_w_speedup(df0,df1,config,autograd=False):
+def df_w_speedup(df0,df1,config):
     cfg_arr = config.split("_")
-    if autograd:
-        df = pd.merge(df0,df1,on='Layer', suffixes=["_"+df0.columns[6].split('_')[1], "_"+df1.columns[6].split('_')[1]])
-        df.insert(7,"Speedup", df[f'dur_{cfg_arr[0]}']/df[f'dur_{cfg_arr[2]}'])
-    else:
-        df = pd.merge(df0,df1,on='Layer')
-        df.insert(3,"Speedup", df.iloc[:,1]/df.iloc[:,2])
+    df = pd.merge(df0,df1,on='Layer')
+    df.insert(3,"Speedup", df.iloc[:,1]/df.iloc[:,2])
     return df
 
 def merge_frames(dfs):
@@ -134,15 +131,25 @@ def gen_metadata(model,hooks,compiled,gpu,mode):
 
 def parse_autograd_json(filename):
     filename = DIR + "cache/autogradtraces/" + filename
+    
+    name = filename.split("_")[2]
+    new_col_name = f"Time_{name}"
+
     with open(filename,'r') as file:
         profiler_data = json.load(file)
         df = pd.json_normalize(profiler_data["traceEvents"])
-        df.rename(columns={'name':'Layer','dur':f'dur_{filename.split("_")[2]}'}, inplace=True)
+        df.rename(columns={'name':'Layer','dur': new_col_name}, inplace=True)
         
         df['Layer_Count'] = df.groupby('Layer').cumcount() + 1
         df['Layer'] = df['Layer'] + '_' + df['Layer_Count'].astype(str)
         df.drop(columns=['Layer_Count'], inplace=True)
-        return df
+        df.dropna(axis=1,how='all',inplace=True)
+        fdf = df.copy(deep=True)
+        
+        df = df[["Layer", new_col_name]]
+        df['Layer'] = df['Layer'].str.replace('^aten::', '', regex=True)
+        df.dropna(axis=0,inplace=True)
+        return df,fdf
 
 def df_filter(df,column,keep):
     return df[df[column].str.contains(keep, case=False)]
