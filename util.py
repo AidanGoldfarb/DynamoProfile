@@ -131,25 +131,24 @@ def gen_metadata(model,hooks,compiled,gpu,mode):
 
 def parse_autograd_json(filename):
     filename = DIR + "cache/autogradtraces/" + filename
-    
-    name = filename.split("_")[2]
-    new_col_name = f"Time_{name}"
-
+    arr = filename.split("/")[-1].split("_")
+    model = arr[0]
+    mode = arr[1]
+    device = arr[2]
+    suffix = "_"+model+"_"+device+"_"+mode
     with open(filename,'r') as file:
         profiler_data = json.load(file)
         df = pd.json_normalize(profiler_data["traceEvents"])
-        df.rename(columns={'name':'Layer','dur': new_col_name}, inplace=True)
-        
+
+        df.rename(columns={'name':'Layer','dur': "Time"}, inplace=True)
+        df['Layer'] = df['Layer'].str.replace('^aten::', '', regex=True) 
         df['Layer_Count'] = df.groupby('Layer').cumcount() + 1
         df['Layer'] = df['Layer'] + '_' + df['Layer_Count'].astype(str)
         df.drop(columns=['Layer_Count'], inplace=True)
-        df.dropna(axis=1,how='all',inplace=True)
-        fdf = df.copy(deep=True)
-        
-        df = df[["Layer", new_col_name]]
-        df['Layer'] = df['Layer'].str.replace('^aten::', '', regex=True)
-        df.dropna(axis=0,inplace=True)
-        return df,fdf
+        df = df.add_suffix(suffix,axis=1)
+        df.rename(columns={f'Layer{suffix}': 'Layer'}, inplace=True)
+
+        return df#df,fdf
 
 def df_filter(df,column,keep):
     return df[df[column].str.contains(keep, case=False)]

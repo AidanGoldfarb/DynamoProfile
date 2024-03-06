@@ -2,12 +2,14 @@ from util import *
 import torch
 
 def _run(model,input_data,profiler,reps):
-    use_cuda = "gpu" in profiler.metadata
     autograd = "nohooks" in profiler.metadata
     for _ in range(reps):
         with torch.no_grad():
             if autograd:
-                with torch.autograd.profiler.profile(use_cuda=use_cuda,record_shapes=True) as prof:
+                with torch.autograd.profiler.profile(activities=[
+                    torch.profiler.ProfilerActivity.CPU,
+                    torch.profiler.ProfilerActivity.CUDA,
+                ], record_shapes=True) as prof:
                     model(input_data)
                 profiler.prof = prof
             else:

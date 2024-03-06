@@ -8,7 +8,6 @@ class ModelProfiler:
         self.metadata = metadata
     
     def register_hooks(self,model):
-        #start_time = -1
         def pre_hook_fn(module, input):
             module.start_time = time.time()
 
@@ -17,7 +16,6 @@ class ModelProfiler:
             rt = end_time - module.start_time
             self.layer_times.append( (str(module), float(rt)) )
 
-        count = 0
         for module in model.modules():
             module.register_forward_pre_hook(pre_hook_fn)
             module.register_forward_hook(forward_hook_fn)

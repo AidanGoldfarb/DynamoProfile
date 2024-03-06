@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 cache/**
 figs/** 
+*.txt
 *.png
 
 # C extensions

@@ -30,14 +30,15 @@ def profile_all_hooktraces():
     profile_hooktraces(MOBILENET_MODELS_FILENAMES)
 
 def profile_all_autgradtraces(verbose=False):
-    profile_autogradtraces(RESNET_MODELS_FILENAMES,verbose=verbose)
-    profile_autogradtraces(GOOGLENET_MODELS_FILENAMES,verbose=verbose)
-    profile_autogradtraces(DENSENET_MODELS_FILENAMES,verbose=verbose)
-    profile_autogradtraces(SQUEEZENET_MODELS_FILENAMES,verbose=verbose)
-    profile_autogradtraces(ALEXNET_MODELS_FILENAMES,verbose=verbose)
-    profile_autogradtraces(MOBILENET_MODELS_FILENAMES,verbose=verbose)
+    find_slow_layers()
+    # profile_autogradtraces(RESNET_MODELS_FILENAMES,verbose=verbose)
+    # profile_autogradtraces(GOOGLENET_MODELS_FILENAMES,verbose=verbose)
+    # profile_autogradtraces(DENSENET_MODELS_FILENAMES,verbose=verbose)
+    # profile_autogradtraces(SQUEEZENET_MODELS_FILENAMES,verbose=verbose)
+    # profile_autogradtraces(ALEXNET_MODELS_FILENAMES,verbose=verbose)
+    # profile_autogradtraces(MOBILENET_MODELS_FILENAMES,verbose=verbose)
 
-#TODO gen figs with all models togeether for certain configs 
+#TODO We can merge all the dataframes, but the convs are not the same shape!!!
 def main():
     #run_all(verbose=False)
     #profile_all_hooktraces()
