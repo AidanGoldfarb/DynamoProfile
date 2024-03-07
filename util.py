@@ -79,10 +79,40 @@ def diff(f0,f1):
     return percentagedifference #> threshold
 
 #given two df, returns a new df with the difference in 1st column as a new column
-def df_w_speedup(df0,df1,config):
-    cfg_arr = config.split("_")
-    df = pd.merge(df0,df1,on='Layer')
-    df.insert(3,"Speedup", df.iloc[:,1]/df.iloc[:,2])
+def add_speedup(df):
+    df.insert(3,"Speedup", np.where(df.iloc[:,2] != 0, df.iloc[:,1] / df.iloc[:,2], 0))
+    return df
+
+
+"""
+    Reorder df columns s.t. the order is [Layer, Time,...Time,...other]
+"""
+def reorder_cols(df):
+    #already reordered
+    # if "Layer" in df.columns[0]:
+    #     return df 
+
+    layer_col = ['Layer']
+    time_cols = [col for col in df.columns if 'Time' in col]
+    dim_col = [col for col in df.columns if 'args.Input Dims' in col]
+    other_cols = [col for col in df.columns if col not in layer_col and col not in time_cols and col not in dim_col]
+    return df[layer_col+time_cols+dim_col+other_cols]
+
+def condense_input_dims(df):
+    id_name = None
+    for col in df.columns:
+        if "args.Input Dims" in col:
+            id_name = col
+    assert id_name is not None
+    id = df[id_name]
+    new_id = []
+    for e in id:
+        if isinstance(e,list):
+            arr = np.concatenate([np.array(sl).flatten() for sl in e])
+            new_id.append(arr.sum())
+        else:
+            new_id.append(-1)
+    df[id_name] = new_id
     return df
 
 def merge_frames(dfs):
@@ -90,6 +120,7 @@ def merge_frames(dfs):
     res = dfs[0]
     for df in dfs[1:]:
         res = pd.merge(res,df, on='Layer')
+        res = reorder_cols(res)
     return res
 
 #pickle file to np array
@@ -147,6 +178,7 @@ def parse_autograd_json(filename):
         df.drop(columns=['Layer_Count'], inplace=True)
         df = df.add_suffix(suffix,axis=1)
         df.rename(columns={f'Layer{suffix}': 'Layer'}, inplace=True)
+        df = condense_input_dims(df)
 
         return df#df,fdf
 

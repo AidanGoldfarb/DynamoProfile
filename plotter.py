@@ -3,10 +3,24 @@ import matplotlib.pyplot as plt
 from util import *
 import numpy as np
 
-# def bar_plot(xs,ys):
-#     for x,y in zip(xs,ys):
-#         plt.bar(x,y)
-#     plt.savefig("testbar", bbox_inches='tight')
+def line_plot(xs,ys,title="title"):
+    plt.scatter(xs,ys,marker='x')
+    
+    b, a = np.polyfit(xs, ys, deg=1)
+    xseq = np.linspace(0, np.max(xs), num=10)
+    plt.plot(xseq, a + b * xseq, color="k", lw=2.5)
+    
+    correlation_matrix = np.corrcoef(xs, ys)
+    correlation_xy = correlation_matrix[0,1]
+    r_squared = correlation_xy**2
+    print(r_squared)
+
+    plt.title(title)
+    plt.xlabel("Number of parameters")
+    plt.ylabel("Speedup")
+    plt.ylim(0,2)
+    # plt.legend()
+    plt.savefig("testfig")
 
 def bar_plot(xs, ys, title):
     # Number of bar groups
