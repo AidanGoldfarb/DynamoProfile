@@ -38,7 +38,7 @@ def profile_all_autgradtraces(verbose=False):
     # profile_autogradtraces(ALEXNET_MODELS_FILENAMES,verbose=verbose)
     # profile_autogradtraces(MOBILENET_MODELS_FILENAMES,verbose=verbose)
 
-#TODO We can merge all the dataframes, but the convs are not the same shape!!!
+#TODO Why are conv different speeds
 def main():
     #run_all(verbose=False)
     #profile_all_hooktraces()

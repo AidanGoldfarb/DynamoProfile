@@ -88,15 +88,12 @@ def add_speedup(df):
     Reorder df columns s.t. the order is [Layer, Time,...Time,...other]
 """
 def reorder_cols(df):
-    #already reordered
-    # if "Layer" in df.columns[0]:
-    #     return df 
-
     layer_col = ['Layer']
     time_cols = [col for col in df.columns if 'Time' in col]
     dim_col = [col for col in df.columns if 'args.Input Dims' in col]
-    other_cols = [col for col in df.columns if col not in layer_col and col not in time_cols and col not in dim_col]
-    return df[layer_col+time_cols+dim_col+other_cols]
+    mem_cols = [col for col in df.columns if 'args.Total' in col]
+    other_cols = [col for col in df.columns if col not in layer_col and col not in time_cols and col not in dim_col and col not in mem_cols]
+    return df[layer_col+time_cols+dim_col+mem_cols+other_cols]
 
 def condense_input_dims(df):
     id_name = None
@@ -170,7 +167,7 @@ def parse_autograd_json(filename):
     with open(filename,'r') as file:
         profiler_data = json.load(file)
         df = pd.json_normalize(profiler_data["traceEvents"])
-
+        
         df.rename(columns={'name':'Layer','dur': "Time"}, inplace=True)
         df['Layer'] = df['Layer'].str.replace('^aten::', '', regex=True) 
         df['Layer_Count'] = df.groupby('Layer').cumcount() + 1

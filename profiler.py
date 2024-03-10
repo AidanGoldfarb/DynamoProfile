@@ -89,14 +89,17 @@ def get_cuda_triton():
 
 def find_slow_layers():
     rct,act,dct,gct,sct,mct = get_cuda_triton()
-    rct = add_speedup(rct)
-    dimcol = rct.columns[4]
-    rct.dropna(axis=0,subset="Speedup",inplace=True)
-    rct.sort_values(by=dimcol,ascending=True, inplace = True)
-    rct = rct.loc[rct[dimcol] != -1]
-    rct = rct.loc[rct['Layer'].str.contains('conv')]
-    #print(rct.iloc[:,0:6].to_string())
-    line_plot(rct.iloc[:,4],rct.iloc[:,3],title="Resnet conv only")
+    print(rct.to_string())
+    exit()
+    # df = rct
+    # df = add_speedup(df)
+    # dimcol = df.columns[4]
+    # df.dropna(axis=0,subset="Speedup",inplace=True)
+    # df.sort_values(by=dimcol,ascending=True, inplace = True)
+    # df = df.loc[df[dimcol] != -1]
+    # df = df.loc[df['Layer'].str.contains('conv')]
+    # #print(df.iloc[:,0:6].to_string())
+    # line_plot(df.iloc[:,4],df.iloc[:,3],title="df conv only")
 
 
 
