@@ -85,11 +85,42 @@ def get_cuda_triton():
     ])
     return (rct,act,dct,gct,sct,mct)
 
-
+def get_interp_cpp():
+    rct = merge_frames([
+        parse_autograd_json("resnet_default_interp_nohooks.trace"),
+        parse_autograd_json("resnet_default_cpp_nohooks.trace")
+    ])
+    act = merge_frames([
+        parse_autograd_json("alexnet_default_interp_nohooks.trace"),
+        parse_autograd_json("alexnet_default_cpp_nohooks.trace")
+    ])
+    dct = merge_frames([
+        parse_autograd_json("densenet_default_interp_nohooks.trace"),
+        parse_autograd_json("densenet_default_cpp_nohooks.trace")
+    ])
+    gct = merge_frames([
+        parse_autograd_json("googlenet_default_interp_nohooks.trace"),
+        parse_autograd_json("googlenet_default_cpp_nohooks.trace")
+    ])
+    sct = merge_frames([
+        parse_autograd_json("squeezenet_default_interp_nohooks.trace"),
+        parse_autograd_json("squeezenet_default_cpp_nohooks.trace")
+    ])
+    mct = merge_frames([
+        parse_autograd_json("mobilenetv2_default_interp_nohooks.trace"),
+        parse_autograd_json("mobilenetv2_default_cpp_nohooks.trace")
+    ])
+    return (rct,act,dct,gct,sct,mct)
 
 def find_slow_layers():
     rct,act,dct,gct,sct,mct = get_cuda_triton()
-    print(rct.to_string())
+    df = mct
+    df = add_speedup(reorder_cols(df))
+    # df = df.loc[df['Layer'].str.contains('conv')]
+    df = df.sort_values(by="Speedup",ascending=True)
+    df = df.loc[df['Speedup'] != 0]
+    df = df.dropna(axis=0,subset=['Speedup'])
+    print(df.to_string())
     exit()
     # df = rct
     # df = add_speedup(df)

@@ -11,7 +11,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 """
     Models
 """
-MODELS = [models.resnet50,models.googlenet,models.densenet121,models.squeezenet1_1,models.alexnet,models.mobilenet_v2]
+VISION_MODELS = [models.resnet50,models.googlenet,models.densenet121,models.squeezenet1_1,models.alexnet,models.mobilenet_v2]
 """"""
 
 """
@@ -82,7 +82,6 @@ def diff(f0,f1):
 def add_speedup(df):
     df.insert(3,"Speedup", np.where(df.iloc[:,2] != 0, df.iloc[:,1] / df.iloc[:,2], 0))
     return df
-
 
 """
     Reorder df columns s.t. the order is [Layer, Time,...Time,...other]

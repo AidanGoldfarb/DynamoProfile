@@ -29,7 +29,6 @@ class ModelProfiler:
     def __str__(self):
         return self.metadata
 
-
 def _gen_model(model,hooks=False,compiled=False, gpu=False, mode="default"):
     profiler = ModelProfiler(gen_metadata(model,hooks,compiled,gpu,mode))    
     if hooks:

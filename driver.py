@@ -12,7 +12,8 @@ from plotter import *
 # torch._dynamo.config.cache_size_limit = 8
 
 def run_all(verbose):
-    for model in tqdm(MODELS,disable=True):#not verbose):
+    #Vision
+    for model in tqdm(VISION_MODELS,disable=True):#not verbose):
         #autograd profiler
         for model_config in prepare_model(model,hooks=False,verbose=verbose):
             run(model_config,profile=True,verbose=verbose)
@@ -38,10 +39,35 @@ def profile_all_autgradtraces(verbose=False):
     # profile_autogradtraces(ALEXNET_MODELS_FILENAMES,verbose=verbose)
     # profile_autogradtraces(MOBILENET_MODELS_FILENAMES,verbose=verbose)
 
-#TODO Why are conv different speeds
+def run_custom_resnet():
+    # res = prepare_model(models.resnet50,hooks=False)[3] # triton compiled
+    # myres = prepare_model(models.myresnet50,hooks=False)[2] #[0] for uncompiled, as we will do manual compilation
+    # run(res,profile=True,verbose=True)
+    # run(myres,profile=True,verbose=True)
+
+    res = parse_autograd_json("resnet_default_triton_nohooks.trace")
+    myres = parse_autograd_json("myresnet_default_gpu_nohooks.trace")
+
+    df = merge_frames([myres,res])
+    df = add_speedup(reorder_cols(df))
+    #df = df.loc[df['Layer'].str.contains('conv')]
+    df = df.sort_values(by="Speedup",ascending=True)
+    df = df.loc[df['Speedup'] != 0]
+    df = df.dropna(axis=0,subset=['Speedup'])
+    # print(df.to_string())
+    custom_time = 0
+    triton_time = 0
+    for i,series in df.iterrows():
+        custom_time += series['Time_myresnet_gpu_default']
+        triton_time += series['Time_resnet_triton_default']
+    print(f"custom_time    {custom_time:.4}")
+    print(f"triton_time    {triton_time:.4}")
+
+#TODO 
 def main():
+    run_custom_resnet()
     #run_all(verbose=False)
     #profile_all_hooktraces()
-    profile_all_autgradtraces(verbose=False)
+    #profile_all_autgradtraces(verbose=False)
 if __name__ == "__main__":
     main()
