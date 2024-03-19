@@ -11,15 +11,23 @@ from plotter import *
 # torch._dynamo.config.suppress_errors = True
 # torch._dynamo.config.cache_size_limit = 8
 
-def run_all(verbose):
+def run_all(verbose,device):
     #Vision
     for model in tqdm(VISION_MODELS,disable=True):#not verbose):
         #autograd profiler
-        for model_config in prepare_model(model,hooks=False,verbose=verbose):
+        for model_config in prepare_model(model,hooks=False,device=device,verbose=verbose):
             run(model_config,profile=True,verbose=verbose)
 
         #custom profiler
-        for model_config in prepare_model(model,hooks=True,verbose=verbose):
+        for model_config in prepare_model(model,hooks=True,device=device,verbose=verbose):
+            run(model_config,profile=True,verbose=verbose)
+    
+    #Custom vision
+    for model in tqdm(CUSTOM_VISION_MODELS,disable=True):
+        for model_config in prepare_model(model,hooks=False,device=device,verbose=verbose):
+            run(model_config,profile=True,verbose=verbose)
+
+        for model_config in prepare_model(model,hooks=True,device=device,verbose=verbose):
             run(model_config,profile=True,verbose=verbose)
 
 def profile_all_hooktraces():
@@ -65,9 +73,8 @@ def run_custom_resnet():
 
 #TODO 
 def main():
-    run_custom_resnet()
-    #run_all(verbose=False)
+    #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
-    #profile_all_autgradtraces(verbose=False)
+    compare_cust_configs()
 if __name__ == "__main__":
     main()

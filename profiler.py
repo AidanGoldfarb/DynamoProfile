@@ -38,18 +38,30 @@ def plot_rt_diff(df0,df1,autograd,config,modelname,filter=None,verbose=False):
 """
     Input: merged [interp_df, cpp_df, gpu_df, triton_df
 """
-def compare_runtimes(modelname, df):
+def compare_runtimes(modelname, df, device='all'):
     irt = 0
     crt = 0
     grt = 0
     trt = 0
-    ort = oracle_runtime(df)
-    for i,series in df.iterrows():
-        irt += series["Time_interp"]
-        crt += series["Time_cpp"]
-        grt += series["Time_gpu"]
-        trt += series["Time_triton"]
+    #ort = oracle_runtime(df)
+    gpu_col = f"Time_my{modelname}_gpu_default"
+    triton_col = f"Time_{modelname}_triton_default"
+    grt = df[gpu_col].sum()
+    trt = df[triton_col].sum()
+    # for i,series in df.iterrows():
+    #     if device == 'all':
+    #         irt += series["Time_interp"]
+    #         crt += series["Time_cpp"]
+    #         grt += series["Time_gpu"]
+    #         trt += series["Time_triton"]
+    #     elif device == 'cpu':
+    #         irt += series["Time_interp"]
+    #         crt += series["Time_cpp"]
+    #     elif device == 'gpu':
+    #         grt += series[gpu_col]
+    #         trt += series[triton_col]
     nano = float(1e3)
+    print(modelname,grt,trt)
     # bar_plot(["interp","cpp","gpu","triton","oracle"],[irt/nano,crt/nano,grt/nano,trt/nano,ort/nano],modelname)
     # print(f"{modelname.upper()}")
     # print(f"\tInterp runetime {irt:.8}")
@@ -121,7 +133,6 @@ def find_slow_layers():
     df = df.loc[df['Speedup'] != 0]
     df = df.dropna(axis=0,subset=['Speedup'])
     print(df.to_string())
-    exit()
     # df = rct
     # df = add_speedup(df)
     # dimcol = df.columns[4]
@@ -133,22 +144,22 @@ def find_slow_layers():
     # line_plot(df.iloc[:,4],df.iloc[:,3],title="df conv only")
 
 
+def compare_cust_configs():
+    triton = {}
+    custom = {}
+    for filename in os.listdir(DIR+"cache/autogradtraces/"):
+        model,_,device,_ = filename.split("_")
+        if 'my' in filename and 'gpu' in device:
+            custom[model] = filename
+        elif "my" not in filename and 'triton' in device:
+            triton[model] = filename 
+    
+    for tf,cf in zip(triton.values(),custom.values()):
+        modelname = tf.split("_")[0]
+        compare_runtimes(modelname,merge_frames([parse_autograd_json(tf),parse_autograd_json(cf)]),device='gpu')
+            
 
-# def find_slow_layers(dct,fdf):
-#     indxs = []
-#     for i,(k,v) in enumerate(dct.items()):
-#         if v != 'triton':
-#             indxs.append(i)
-#     indxs = np.array(indxs)
-
-#     #slow are the opperations which are slower in the compiled version . fast are all others, faster with compiler
-#     slow = fdf.iloc[indxs][["Layer","args.Input Dims"]].dropna(axis=0,subset=["args.Input Dims"])
-#     fast = fdf.iloc[~fdf.index.isin(indxs)][["Layer","args.Input Dims"]].dropna(axis=0,subset=["args.Input Dims"])
-
-#     return slow,fast
-
-
-def profile_hooktraces(filenames):
+def profile_hooktraces(filenames, device='all'):
     modelname = filenames[0].split('_')[0]
     id = pickle_to_df(filenames[INTERP])
     cd = pickle_to_df(filenames[COMPILED])
@@ -184,15 +195,13 @@ def profile_hooktraces(filenames):
     # plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton",filter="Conv")
     # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
 
-
-def profile_autogradtraces(filenames,verbose=False):
+def profile_autogradtraces(filenames,device='all',verbose=False):
     modelname = filenames[0].split('_')[0]
-    id,fid = parse_autograd_json(filenames[INTERP]+"_nohooks.trace")
-    cd,fcd = parse_autograd_json(filenames[COMPILED]+"_nohooks.trace")
-    gd,fgd = parse_autograd_json(filenames[GPU]+"_nohooks.trace")
-    td,ftd = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
-    df = merge_frames([id,cd,gd,td])
-
+    # id,fid = parse_autograd_json(filenames[INTERP]+"_nohooks.trace")
+    # cd,fcd = parse_autograd_json(filenames[COMPILED]+"_nohooks.trace")
+    # gd,fgd = parse_autograd_json(filenames[GPU]+"_nohooks.trace")
+    # td,ftd = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
+    #df = merge_frames([id,cd,gd,td])
     # fdf = merge_frames([fid,fcd,fgd,ftd])
 
     # compare_runtimes(modelname,df)

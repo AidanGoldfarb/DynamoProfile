@@ -12,6 +12,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
     Models
 """
 VISION_MODELS = [models.resnet50,models.googlenet,models.densenet121,models.squeezenet1_1,models.alexnet,models.mobilenet_v2]
+CUSTOM_VISION_MODELS = [models.myresnet50]
 """"""
 
 """
@@ -24,6 +25,7 @@ GPU = 2
 TRITON = 3
 CONFIG_MAP = {0:"interp",1:"cpp",2:"gpu",3:"triton"}
 RESNET_MODELS_FILENAMES = ["resnet_default_interp","resnet_default_cpp","resnet_default_gpu","resnet_default_triton"]
+MYRESNET_MODEL_FILENAMES = ["myresnet_default_interp", "resnet_default_gpu"]
 GOOGLENET_MODELS_FILENAMES = ["googlenet_default_interp","googlenet_default_cpp","googlenet_default_gpu","googlenet_default_triton"]
 DENSENET_MODELS_FILENAMES = ["densenet_default_interp","densenet_default_cpp","densenet_default_gpu","densenet_default_triton"]
 SQUEEZENET_MODELS_FILENAMES = ["squeezenet_default_interp","squeezenet_default_cpp","squeezenet_default_gpu","squeezenet_default_triton"]

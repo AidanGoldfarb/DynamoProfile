@@ -50,20 +50,31 @@ def _gen_model(model,hooks=False,compiled=False, gpu=False, mode="default"):
     TODO: add mode support. As of now just default, as few 
     differences were observed with other modes
 """
-def prepare_model(model,hooks,verbose=False):
+def prepare_model(model,hooks,device='all',verbose=False):
     if torch.cuda.is_available(): 
-        return (
-            _gen_model(model(), hooks=hooks, compiled=False, gpu=False), 
-            _gen_model(model(), hooks=hooks, compiled=True,  gpu=False), 
-            _gen_model(model(), hooks=hooks, compiled=False, gpu=True), 
-            _gen_model(model(), hooks=hooks, compiled=True,  gpu=True)
-        )
+        if device == 'all':
+            return (
+                _gen_model(model(), hooks=hooks, compiled=False, gpu=False), 
+                _gen_model(model(), hooks=hooks, compiled=True,  gpu=False), 
+                _gen_model(model(), hooks=hooks, compiled=False, gpu=True), 
+                _gen_model(model(), hooks=hooks, compiled=True,  gpu=True)
+            )
+        elif device == 'gpu':
+            return (
+                _gen_model(model(), hooks=hooks, compiled=False, gpu=True), 
+                _gen_model(model(), hooks=hooks, compiled=True,  gpu=True)
+            )
+        elif device == 'cpu':
+            return (
+                _gen_model(model(), hooks=hooks, compiled=False, gpu=False), 
+                _gen_model(model(), hooks=hooks, compiled=True,  gpu=False), 
+            )
     else:
         if verbose:
             print("no GPU, skipping tests")
         return (
             _gen_model(model(), hooks=hooks, compiled=False, gpu=False), 
-            #_gen_model(model(), hooks=hooks, compiled=True,  gpu=False)
+            _gen_model(model(), hooks=hooks, compiled=True,  gpu=False) #doesnt work on apple devices?
         )
 
 def prepare_all():
