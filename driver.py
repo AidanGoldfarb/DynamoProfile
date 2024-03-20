@@ -75,6 +75,7 @@ def run_custom_resnet():
 def main():
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
-    compare_cust_configs()
+    #compare_cust_configs()
+    profile_autogradtraces()
 if __name__ == "__main__":
     main()

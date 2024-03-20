@@ -21,13 +21,6 @@ def oracle_runtime(modelname):
 def runtime(df):
     return df.iloc[:,1].sum()
 
-def find_best_device_for_layers(df):
-    res = {}
-    for i,series in df.iterrows():
-        layer = series["Layer"]
-        res[layer] = CONFIG_MAP[series[["Time_interp","Time_cpp","Time_gpu","Time_triton"]].argmin()]
-    return res
-
 def plot_rt_diff(df0,df1,autograd,config,modelname,filter=None,verbose=False):
     title = modelname+"_"+config
     title = title.replace(" ","_")
@@ -188,24 +181,19 @@ def profile_hooktraces(filenames, device='all'):
     # plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton",filter="Conv")
     # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
 
-def profile_autogradtraces(filenames,device='all',verbose=False):
-    modelname = filenames[0].split('_')[0]
-    # id,fid = parse_autograd_json(filenames[INTERP]+"_nohooks.trace")
-    # cd,fcd = parse_autograd_json(filenames[COMPILED]+"_nohooks.trace")
-    # gd,fgd = parse_autograd_json(filenames[GPU]+"_nohooks.trace")
-    # td,ftd = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
-    #df = merge_frames([id,cd,gd,td])
-    # fdf = merge_frames([fid,fcd,fgd,ftd])
+def profile_autogradtraces(verbose=False):
+    filenames = FILENAMES["resnet"]
+    cuda = parse_autograd_json(filenames[GPU]+"_nohooks.trace")
+    triton = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
+    
+    df = merge_frames([cuda,triton])
+    df = df.loc[df['Layer'].str.contains('conv')]
+    df.dropna(axis=1,how='all',inplace=True)
+    df = reorder_cols(df)
+    df = add_speedup(df)
+    df.sort_values(by="Speedup",axis=0,ascending=False,inplace=True)
 
-    # compare_runtimes(modelname,df)
-
-    # plot_rt_diff(id,cd,True,"interp vs cpp",modelname)
-    # plot_rt_diff(gd,td,True,"gpu vs triton",modelname)
-
-    # dct = find_best_device_for_layers(df)
-    # slow,fast = find_slow_layers(dct,ftd)
-    # print("##########SLOW##########")
-    # print(slow.to_string())
-    # print("##########FAST##########")
-    # print(fast)
+    
+    print(df.to_string())
+    
     
