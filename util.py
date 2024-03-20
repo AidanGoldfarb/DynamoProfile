@@ -12,7 +12,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
     Models
 """
 VISION_MODELS = [models.resnet50,models.googlenet,models.densenet121,models.squeezenet1_1,models.alexnet,models.mobilenet_v2]
-CUSTOM_VISION_MODELS = [models.myresnet50]
+CUSTOM_VISION_MODELS = [models.myresnet50,models.mygooglenet,models.mydensenet121,models.mysqueezenet1_1,models.myalexnet,models.mymobilenet_v2]
 """"""
 
 """
@@ -31,6 +31,12 @@ DENSENET_MODELS_FILENAMES = ["densenet_default_interp","densenet_default_cpp","d
 SQUEEZENET_MODELS_FILENAMES = ["squeezenet_default_interp","squeezenet_default_cpp","squeezenet_default_gpu","squeezenet_default_triton"]
 ALEXNET_MODELS_FILENAMES = ["alexnet_default_interp","alexnet_default_cpp","alexnet_default_gpu","alexnet_default_triton"]
 MOBILENET_MODELS_FILENAMES = ["mobilenetv2_default_interp","mobilenetv2_default_cpp","mobilenetv2_default_gpu","mobilenetv2_default_triton"]
+FILENAMES = {'resnet': RESNET_MODELS_FILENAMES,
+            'googlenet': GOOGLENET_MODELS_FILENAMES,
+            'densenet': DENSENET_MODELS_FILENAMES,
+            'squeezenet': SQUEEZENET_MODELS_FILENAMES,
+            'alexnet': ALEXNET_MODELS_FILENAMES,
+            'mobilenetv2': MOBILENET_MODELS_FILENAMES}
 """"""
 
 

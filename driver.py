@@ -13,14 +13,14 @@ from plotter import *
 
 def run_all(verbose,device):
     #Vision
-    for model in tqdm(VISION_MODELS,disable=True):#not verbose):
-        #autograd profiler
-        for model_config in prepare_model(model,hooks=False,device=device,verbose=verbose):
-            run(model_config,profile=True,verbose=verbose)
+    # for model in tqdm(VISION_MODELS,disable=True):#not verbose):
+    #     #autograd profiler
+    #     for model_config in prepare_model(model,hooks=False,device=device,verbose=verbose):
+    #         run(model_config,profile=True,verbose=verbose)
 
-        #custom profiler
-        for model_config in prepare_model(model,hooks=True,device=device,verbose=verbose):
-            run(model_config,profile=True,verbose=verbose)
+    #     #custom profiler
+    #     for model_config in prepare_model(model,hooks=True,device=device,verbose=verbose):
+    #         run(model_config,profile=True,verbose=verbose)
     
     #Custom vision
     for model in tqdm(CUSTOM_VISION_MODELS,disable=True):

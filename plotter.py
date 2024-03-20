@@ -21,6 +21,7 @@ def line_plot(xs,ys,title="title"):
     plt.ylim(0,2)
     # plt.legend()
     plt.savefig("testfig")
+    plt.close()
 
 def bar_plot(xs, ys, title):
     # Number of bar groups
@@ -29,6 +30,7 @@ def bar_plot(xs, ys, title):
     plt.ylabel("Runtime [μs]")
     plt.title(title)
     plt.savefig(DIR + "figs/rt/"+title, bbox_inches='tight')
+    plt.close()
 
 """
     Plot density of 'var'
