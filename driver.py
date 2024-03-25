@@ -11,6 +11,51 @@ from plotter import *
 # torch._dynamo.config.suppress_errors = True
 # torch._dynamo.config.cache_size_limit = 8
 
+#wall clock time
+def raw_run_all(reps=5):
+    input_data = torch.rand(1, 3, 224, 224, device='cuda')
+
+    for reg,cust in zip(VISION_MODELS,CUSTOM_VISION_MODELS):
+        model = reg().to('cuda').eval()
+        modelcomp = torch.compile(model)
+        mymodel = cust().to('cuda').eval()
+        modelname = model.__class__.__name__
+        for _ in range(reps):
+            st = time.time()
+            model(input_data)
+            et = time.time()
+        print(f"{modelname} cuda    {et-st:.3}")
+
+        for _ in range(reps):
+            st = time.time()
+            modelcomp(input_data)
+            et = time.time()
+        print(f"{modelname} triton  {et-st:.3}")
+
+        for _ in range(reps):
+            st = time.time()
+            mymodel(input_data)
+            et = time.time()
+        print(f"{modelname} custom  {et-st:.3}")
+    
+    # for model in VISION_MODELS:
+    #     model = model().to('cuda')
+    #     model.eval()
+    #     modelComp = torch.compile(model)
+
+    #     for _ in range(reps):
+    #         st = time.time()
+    #         model(input_data)
+    #         et = time.time()
+    #     print(et-st)
+
+    #     for _ in range(reps):
+    #         st = time.time()
+    #         modelComp(input_data)
+    #         et = time.time()
+    #     print(et-st)
+    #     print("####")
+
 def run_all(verbose,device):
     #Vision
     # for model in tqdm(VISION_MODELS,disable=True):#not verbose):
@@ -71,11 +116,16 @@ def run_custom_resnet():
     print(f"custom_time    {custom_time:.4}")
     print(f"triton_time    {triton_time:.4}")
 
+def run_oracle_config():
+    pass
+
 #TODO 
 def main():
+    #raw_run_all()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
     #compare_cust_configs()
     profile_autogradtraces()
+    #run_oracle_config()
 if __name__ == "__main__":
     main()

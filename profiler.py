@@ -187,10 +187,11 @@ def profile_autogradtraces(verbose=False):
     triton = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
     
     df = merge_frames([cuda,triton])
-    df = df.loc[df['Layer'].str.contains('conv')]
+    #df = df.loc[df['Layer'].str.contains('conv')]
     df.dropna(axis=1,how='all',inplace=True)
     df = reorder_cols(df)
     df = add_speedup(df)
+    df.dropna(axis=0,subset=['Speedup'])
     df.sort_values(by="Speedup",axis=0,ascending=False,inplace=True)
 
     

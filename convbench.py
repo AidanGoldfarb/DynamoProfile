@@ -49,14 +49,23 @@ for config in configs:
     times_cuda = [benchmark_conv2d(input_tensor, weight, config['stride'], config['padding'], func_cuda) for _ in range(5)]
     times_triton = [benchmark_conv2d(input_tensor, weight, config['stride'], config['padding'], compiled_func_triton) for _ in range(5)]
     
-    cuda_avg_time = np.mean(times_cuda)
-    triton_avg_time = np.mean(times_triton)
+    cuda_avg_time = np.median(times_cuda)
+    triton_avg_time = np.median(times_triton)
     
     cuda_times.append(cuda_avg_time)
     triton_times.append(triton_avg_time)
     config_labels.append(f"KS{config['kernel_size']}_S{config['stride']}_P{config['padding']}")
 
-# Plotting the results
+
+
+
+
+
+
+
+
+
+#Plotting the results
 plt.figure(figsize=(15, 10))
 index = np.arange(len(config_labels))
 bar_width = 0.35

@@ -2,6 +2,7 @@ from util import *
 import torch
 
 def _run(model,input_data,profiler,reps):
+    model.eval()
     autograd = "nohooks" in profiler.metadata
     for _ in range(reps):
         with torch.no_grad():
