@@ -19,7 +19,7 @@ def raw_run_all(reps=5):
         model = reg().to('cuda').eval()
         modelcomp = torch.compile(model)
         mymodel = cust().to('cuda').eval()
-        modelname = model.__class__.__name__
+        modelname = model.__class__.__name__.lower()
         for _ in range(reps):
             st = time.time()
             model(input_data)
@@ -37,43 +37,25 @@ def raw_run_all(reps=5):
             mymodel(input_data)
             et = time.time()
         print(f"{modelname} custom  {et-st:.3}")
-    
-    # for model in VISION_MODELS:
-    #     model = model().to('cuda')
-    #     model.eval()
-    #     modelComp = torch.compile(model)
-
-    #     for _ in range(reps):
-    #         st = time.time()
-    #         model(input_data)
-    #         et = time.time()
-    #     print(et-st)
-
-    #     for _ in range(reps):
-    #         st = time.time()
-    #         modelComp(input_data)
-    #         et = time.time()
-    #     print(et-st)
-    #     print("####")
 
 def run_all(verbose,device):
     #Vision
-    # for model in tqdm(VISION_MODELS,disable=True):#not verbose):
-    #     #autograd profiler
-    #     for model_config in prepare_model(model,hooks=False,device=device,verbose=verbose):
-    #         run(model_config,profile=True,verbose=verbose)
+    for model in tqdm(VISION_MODELS,disable=True):#not verbose):
+        #autograd profiler
+        for model_config in prepare_model(model,hooks=False,device=device,verbose=verbose):
+            run(model_config,profile=True,verbose=verbose)
 
-    #     #custom profiler
-    #     for model_config in prepare_model(model,hooks=True,device=device,verbose=verbose):
-    #         run(model_config,profile=True,verbose=verbose)
+        #custom profiler
+        # for model_config in prepare_model(model,hooks=True,device=device,verbose=verbose):
+        #     run(model_config,profile=True,verbose=verbose)
     
     #Custom vision
     for model in tqdm(CUSTOM_VISION_MODELS,disable=True):
         for model_config in prepare_model(model,hooks=False,device=device,verbose=verbose):
             run(model_config,profile=True,verbose=verbose)
 
-        for model_config in prepare_model(model,hooks=True,device=device,verbose=verbose):
-            run(model_config,profile=True,verbose=verbose)
+        # for model_config in prepare_model(model,hooks=True,device=device,verbose=verbose):
+        #     run(model_config,profile=True,verbose=verbose)
 
 def profile_all_hooktraces():
     profile_hooktraces(RESNET_MODELS_FILENAMES)
@@ -115,17 +97,16 @@ def run_custom_resnet():
         triton_time += series['Time_resnet_triton_default']
     print(f"custom_time    {custom_time:.4}")
     print(f"triton_time    {triton_time:.4}")
-
-def run_oracle_config():
-    pass
+    
 
 #TODO 
 def main():
     #raw_run_all()
+    compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
     #compare_cust_configs()
-    profile_autogradtraces()
+    #profile_autogradtraces()
     #run_oracle_config()
 if __name__ == "__main__":
     main()

@@ -1,9 +1,11 @@
 import warnings,os,time,pickle,typing,json
 warnings.simplefilter(action='ignore', category=FutureWarning) #for googlenet
-
+import torch
 import torchvision.models as models
 import numpy as np
 import pandas as pd
+
+import numbers
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -188,3 +190,59 @@ def parse_autograd_json(filename):
 
 def df_filter(df,column,keep):
     return df[df[column].str.contains(keep, case=False)]
+
+
+"""
+    Timers
+"""
+def _call_w_arg(f,args):
+    output = None
+    if type(args) is tuple:
+        start = time.perf_counter_ns()
+        output = f(*args)
+        tm = time.perf_counter_ns()-start
+    elif type(args) is list or type(args) is np.ndarray or type(args) is torch.Tensor or callable(args) or isinstance(args, numbers.Number):
+        start = time.perf_counter_ns()
+        output = f(args)
+        tm = time.perf_counter_ns()-start
+    else:
+        print(type(args))
+        raise NotImplemented
+    return tm,output
+
+def _call_w_both(f,args,kwargs):
+    output = None
+    if type(args) is tuple:
+        start = time.perf_counter_ns()
+        output = f(*args,**kwargs)
+        tm = time.perf_counter_ns()-start
+    elif type(args) is list or type(args) is np.ndarray or callable(args) or isinstance(args, numbers.Number):
+        start = time.perf_counter_ns()
+        output = f(args,**kwargs)
+        tm = time.perf_counter_ns()-start
+    else:
+        print(type(args),type(kwargs))
+        raise NotImplemented
+    return tm,output
+
+def timeit(f, args=None, kwargs=None, keepRes=False) -> float:
+    output = None
+    tm = -1
+    match args,kwargs:
+        case None,None: 
+            start = time.perf_counter_ns()
+            output = f()
+            tm = time.perf_counter_ns()-start
+        case arg,None: 
+            tm,output = _call_w_arg(f,arg)
+        case None,kwarg: 
+            raise NotImplemented("timeit: just kwargs??")
+        case arg,kwarg: 
+            tm,output = _call_w_both(f,arg,kwarg)
+        case _: raise NotImplemented("timeit notimplemented")
+    if keepRes:
+        return tm, output
+    else:
+        return tm
+
+

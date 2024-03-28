@@ -7,13 +7,14 @@ def _run(model,input_data,profiler,reps):
     for _ in range(reps):
         with torch.no_grad():
             if autograd:
-                with torch.autograd.profiler.profile(record_shapes=True, profile_memory=True, with_modules=True) as prof:
+                with torch.autograd.profiler.profile(record_shapes=True, profile_memory=True, with_stack=True) as prof:
                     model(input_data)
                 profiler.prof = prof
             else:
                 profiler.clear_layer_times()
                 model(input_data)
     if autograd:
+        profiler.prof.export_stacks(f"cache/autogradtraces/{profiler.metadata}.stack",metric='self_cuda_time_total')
         profiler.prof.export_chrome_trace(f"cache/autogradtraces/{profiler.metadata}.trace")
     else:
         pickle_obj(profiler.get_layer_times(),profiler.metadata)

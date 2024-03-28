@@ -35,23 +35,27 @@ def plot_rt_diff(df0,df1,autograd,config,modelname,filter=None,verbose=False):
         title = title+"_autograd"
     density_plot_model(df,'Speedup',title,savepath,verbose)
 
-"""
-    Input: merged [interp_df, cpp_df, gpu_df, triton_df
-"""
-def compare_runtimes(modelname, df, device='all'):
-    gpu_col = f"Time_my{modelname}_gpu_default"
-    triton_col = f"Time_{modelname}_triton_default"
-    nano = float(1e3)
 
-    irt = parse_autograd_json(modelname+"_default_interp_nohooks.trace")[f"Time_{modelname}_interp_default"].sum()
-    crt = parse_autograd_json(modelname+"_default_cpp_nohooks.trace")[f"Time_{modelname}_cpp_default"].sum()
-    grt = parse_autograd_json(modelname+"_default_gpu_nohooks.trace")[f"Time_{modelname}_gpu_default"].sum()
-    trt = df[triton_col].sum()
-    cust_rt = df[gpu_col].sum()
-    ort = oracle_runtime(modelname)
+def _extract_dict():
+    data_dict = {}
+    with open("layertimes.txt", 'r') as f:
+        group = []  
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue 
+            group.append(line)
+            if len(group) == 6:
+                data_dict[' '.join(group[-1].split()[0:2])] = eval(group[-2])
+                group = []
+    return data_dict
+"""
     
-    #print(f"MODEL: {modelname}\n\tinterp: {irt}\n\tcpp:    {crt}\n\tgpu:    {grt}\n\ttriton: {trt}\n\tcustom: {cust_rt}\n\toracle: {ort}\n\tspeedup: {trt/cust_rt:.4}")
-    bar_plot(["interp","cpp","gpu","triton","custom","oracle"],[irt/nano, crt/nano, grt/nano, trt/nano, cust_rt/nano, ort/nano],modelname)
+"""
+def compare_runtimes():
+    dct = _extract_dict()
+    
+    #print(np.array(lst).shape)
 
 def get_cuda_triton():
     rct = merge_frames([
@@ -184,9 +188,10 @@ def profile_hooktraces(filenames, device='all'):
 def profile_autogradtraces(verbose=False):
     filenames = FILENAMES["resnet"]
     cuda = parse_autograd_json(filenames[GPU]+"_nohooks.trace")
-    triton = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
+    # triton = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
+    cust = parse_autograd_json("myresnet_default_gpu_nohooks.trace")
     
-    df = merge_frames([cuda,triton])
+    df = merge_frames([cuda,cust])
     #df = df.loc[df['Layer'].str.contains('conv')]
     df.dropna(axis=1,how='all',inplace=True)
     df = reorder_cols(df)
