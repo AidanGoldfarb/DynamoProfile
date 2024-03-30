@@ -1,5 +1,6 @@
 from util import *
 from plotter import *
+from itertools import islice
 
 
 """
@@ -46,7 +47,7 @@ def _extract_dict():
                 continue 
             group.append(line)
             if len(group) == 6:
-                data_dict[' '.join(group[-1].split()[0:2])] = eval(group[-2])
+                data_dict[' '.join(group[-1].split()[0:2])] = np.array(eval(group[-2]))
                 group = []
     return data_dict
 """
@@ -54,8 +55,22 @@ def _extract_dict():
 """
 def compare_runtimes():
     dct = _extract_dict()
-    
-    #print(np.array(lst).shape)
+    it = iter(dct.items())
+    try:
+        while True:
+            k0, v0 = next(it)
+            k1, v1 = next(it)
+            k2, v2 = next(it)
+            
+            #print(k0,k1,k2)
+            cuda = v0.sum()
+            triton = v1.sum()
+            cust = v2.sum()
+            if(cust<triton and cust<cuda):
+                print(k0.split()[0])
+    except StopIteration:
+        pass
+        
 
 def get_cuda_triton():
     rct = merge_frames([
