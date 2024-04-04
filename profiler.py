@@ -68,25 +68,19 @@ def compare_runtimes():
             
             #print(k0,k1,k2)
             modelname = k0.split()[0]
-            print(modelname)
-            print(arr0.sum(),tot0)
-            print(arr1.sum(),tot1)
-            print(arr2.sum(),tot2,'\n')
+            # print(modelname)
+            # for i,(cuda,triton) in enumerate(zip(arr0,arr1)):
+            #     if cuda-triton > 0 and diff(cuda,triton) > 10:
+            #         print(i)
 
             #sanity check
-            #plot_arrsum_vs_total(modelname,[arr0.sum(),arr1.sum(),arr2.sum()],[tot0,tot1,tot2])
+            plot_arrsum_vs_total(modelname,[arr0.sum(),arr1.sum(),arr2.sum()],[tot0,tot1,tot2])
             
             # cuda = v0.sum()
             # triton = v1.sum()
             # cust = v2.sum()
             #bar_plot(["cuda","triton","custom"],[cuda,triton,cust],title=modelname)
-            # if 'squeeze' in modelname:
-            #     for i,(cuda,triton,cust) in enumerate(zip(v0,v1,v2)):
-            #         #print(cuda,triton)
-            #         if cuda > triton:
-            #             print(i)
-            # if(cust<cuda):
-            #     print(k0.split()[0])
+    
     except StopIteration:
         pass
         
