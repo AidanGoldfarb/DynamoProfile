@@ -21,22 +21,22 @@ def raw_run_all(reps=5):
         mymodel = cust().to('cuda').eval()
         modelname = model.__class__.__name__.lower()
         for _ in range(reps):
-            st = time.time()
+            st = time.perf_counter_ns()
             model(input_data)
-            et = time.time()
-        print(f"{modelname} cuda    {et-st:.3}")
+            et = time.perf_counter_ns()
+        print(f"{modelname} cuda    {et-st}")
 
         for _ in range(reps):
-            st = time.time()
+            st = time.perf_counter_ns()
             modelcomp(input_data)
-            et = time.time()
-        print(f"{modelname} triton  {et-st:.3}")
+            et = time.perf_counter_ns()
+        print(f"{modelname} triton  {et-st}")
 
         for _ in range(reps):
-            st = time.time()
+            st = time.perf_counter_ns()
             mymodel(input_data)
-            et = time.time()
-        print(f"{modelname} custom  {et-st:.3}")
+            et = time.perf_counter_ns()
+        print(f"{modelname} custom  {et-st}")
 
 def run_all(verbose,device):
     #Vision

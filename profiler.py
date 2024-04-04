@@ -47,7 +47,7 @@ def _extract_dict():
                 continue 
             group.append(line)
             if len(group) == 6:
-                data_dict[' '.join(group[-1].split()[0:2])] = np.array(eval(group[-2]))
+                data_dict[' '.join(group[-1].split()[0:2])] = (np.array(eval(group[-2])),int(group[-1].split()[-1]))
                 group = []
     return data_dict
 """
@@ -61,13 +61,32 @@ def compare_runtimes():
             k0, v0 = next(it)
             k1, v1 = next(it)
             k2, v2 = next(it)
+
+            arr0, tot0 = v0
+            arr1, tot1 = v1
+            arr2, tot2 = v2
             
             #print(k0,k1,k2)
-            cuda = v0.sum()
-            triton = v1.sum()
-            cust = v2.sum()
-            if(cust<triton and cust<cuda):
-                print(k0.split()[0])
+            modelname = k0.split()[0]
+            print(modelname)
+            print(arr0.sum(),tot0)
+            print(arr1.sum(),tot1)
+            print(arr2.sum(),tot2,'\n')
+
+            #sanity check
+            #plot_arrsum_vs_total(modelname,[arr0.sum(),arr1.sum(),arr2.sum()],[tot0,tot1,tot2])
+            
+            # cuda = v0.sum()
+            # triton = v1.sum()
+            # cust = v2.sum()
+            #bar_plot(["cuda","triton","custom"],[cuda,triton,cust],title=modelname)
+            # if 'squeeze' in modelname:
+            #     for i,(cuda,triton,cust) in enumerate(zip(v0,v1,v2)):
+            #         #print(cuda,triton)
+            #         if cuda > triton:
+            #             print(i)
+            # if(cust<cuda):
+            #     print(k0.split()[0])
     except StopIteration:
         pass
         
