@@ -54,37 +54,21 @@ def _extract_dict():
     
 """
 def compare_runtimes():
-    dct = _extract_dict()
-    it = iter(dct.items())
-    try:
-        while True:
-            k0, v0 = next(it)
-            k1, v1 = next(it)
-            k2, v2 = next(it)
+    dct = unpickle_obj("raw_run_dct")
+    df = pd.DataFrame.from_dict(dct, orient='index')
+    print(df.head())
+    # for modelname,data in dct.items():
+    #     print(modelname)
+    #     for k,v in data.items():
+    #         print('\t',k)
 
-            arr0, tot0 = v0
-            arr1, tot1 = v1
-            arr2, tot2 = v2
-            
-            #print(k0,k1,k2)
-            modelname = k0.split()[0]
-            if 'alex' in modelname:
-                print(modelname)
-                for i,(cuda,triton) in enumerate(zip(arr0,arr1)):
-                    print(cuda-triton)
-                    if cuda-triton > 0:# and diff(cuda,triton) > 5:
-                        print(i)
-
-            #sanity check
-            #plot_arrsum_vs_total(modelname,[arr0.sum(),arr1.sum(),arr2.sum()],[tot0,tot1,tot2])
-            
-            # cuda = v0.sum()
-            # triton = v1.sum()
-            # cust = v2.sum()
-            #bar_plot(["cuda","triton","custom"],[cuda,triton,cust],title=modelname)
+    #sanity check
+    #plot_arrsum_vs_total(modelname,[arr0.sum(),arr1.sum(),arr2.sum()],[tot0,tot1,tot2])
     
-    except StopIteration:
-        pass
+    # cuda = v0.sum()
+    # triton = v1.sum()
+    # cust = v2.sum()
+    #bar_plot(["cuda","triton","custom"],[cuda,triton,cust],title=modelname)
         
 
 def get_cuda_triton():

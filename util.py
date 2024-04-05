@@ -52,10 +52,11 @@ ENDC = '\033[0m'
 DIR = "/data/agoldf6/DynamoProfile/"
 
 def pickle_obj(obj,filename):
-    dr = "hooktraces/"
+    dr = ""
     if "nohooks" in filename:
         dr = "autogradtraces/"
-    else:
+    elif 'trace' in filename:
+        dr = "hooktraces/"
         assert type(obj) is np.ndarray
         assert type(obj[0][0]) is np.str_
         assert type(obj[0][1]) is np.float64
@@ -64,9 +65,11 @@ def pickle_obj(obj,filename):
         pickle.dump(obj, f)
 
 def unpickle_obj(filename):
-    dr = "hooktraces/"
+    dr = ""
     if "nohooks" in filename:
         dr = "autogradtraces/"
+    elif 'trace' in filename:
+        dr = "hooktraces/"
     with open(os.path.join(DIR, f"cache/{dr}"+filename+".pkl"), 'rb') as f:
         return pickle.load(f)
 

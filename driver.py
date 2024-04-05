@@ -67,10 +67,7 @@ def raw_run_all(reps=5):
 
         run_data[modelname] = dct
     
-    
-    for k,v in run_data.items():
-        print(k,v)
-    #return run_data
+    pickle_obj(run_data,"raw_run_dct")
 
 def run_all(verbose,device):
     #Vision
@@ -135,8 +132,8 @@ def run_custom_resnet():
 
 #TODO Check out graphs in figs, cust should be optimal
 def main():
-    raw_run_all()
-    #compare_runtimes()
+    #raw_run_all()
+    compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
     #compare_cust_configs()
