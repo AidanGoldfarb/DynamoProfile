@@ -14,29 +14,63 @@ from plotter import *
 #wall clock time
 def raw_run_all(reps=5):
     input_data = torch.rand(1, 3, 224, 224, device='cuda')
+    run_data = {}
 
-    for reg,cust in zip(VISION_MODELS,CUSTOM_VISION_MODELS):
-        model = reg().to('cuda').eval()
+    for reg,cust,pure in zip(VISION_MODELS,CUSTOM_VISION_MODELS,PURE_VISION_MODELS):
+        model = reg().to('cuda').eval()     
         modelcomp = torch.compile(model)
         mymodel = cust().to('cuda').eval()
+        
+        pmodel = pure().to('cuda').eval()
+        pmodelcomp = torch.compile(pmodel)
         modelname = model.__class__.__name__.lower()
-        for _ in range(reps):
-            st = time.perf_counter_ns()
-            model(input_data)
-            et = time.perf_counter_ns()
-        print(f"{modelname} cuda    {et-st}")
 
-        for _ in range(reps):
-            st = time.perf_counter_ns()
-            modelcomp(input_data)
-            et = time.perf_counter_ns()
-        print(f"{modelname} triton  {et-st}")
+        dct = {}
 
+        #CUDA Reg
         for _ in range(reps):
             st = time.perf_counter_ns()
-            mymodel(input_data)
+            out = model(input_data)
             et = time.perf_counter_ns()
-        print(f"{modelname} custom  {et-st}")
+        dct['cuda_arr'] = out[-1]
+        dct['cuda_e2e'] = et-st
+
+        #Triton
+        for _ in range(reps):
+            st = time.perf_counter_ns()
+            out = modelcomp(input_data)
+            et = time.perf_counter_ns()
+        dct['triton_arr'] = out[-1]
+        dct['triton_e2e'] = et-st
+
+        #Custom
+        for _ in range(reps):
+            st = time.perf_counter_ns()
+            out = mymodel(input_data)
+            et = time.perf_counter_ns()
+        dct['cust_arr'] = out[-1]
+        dct['cust_e2e'] = et-st
+
+        #CUDA Pure
+        for _ in range(reps):
+            st = time.perf_counter_ns()
+            out = pmodel(input_data)
+            et = time.perf_counter_ns()
+        dct['cuda_pure_e2e'] = et-st
+
+        #TRITON Pure
+        for _ in range(reps):
+            st = time.perf_counter_ns()
+            out = pmodelcomp(input_data)
+            et = time.perf_counter_ns()
+        dct['triton_pure_e2e'] = et-st
+
+        run_data[modelname] = dct
+    
+    
+    for k,v in run_data.items():
+        print(k,v)
+    #return run_data
 
 def run_all(verbose,device):
     #Vision
@@ -99,10 +133,10 @@ def run_custom_resnet():
     print(f"triton_time    {triton_time:.4}")
     
 
-#TODO 
+#TODO Check out graphs in figs, cust should be optimal
 def main():
-    #raw_run_all()
-    compare_runtimes()
+    raw_run_all()
+    #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
     #compare_cust_configs()

@@ -17,7 +17,7 @@ def plot_arrsum_vs_total(modelname, arr_sums, tots):
     rects2 = ax.bar(index + bar_width, tots, bar_width, alpha=opacity, color='g', label='Tot')
 
     ax.set_ylabel('Runtime [ns]')
-    ax.set_title(modelname + "e2e runtime vs sum of layer times")
+    ax.set_title(modelname + " e2e runtime vs sum of layer times")
     ax.set_xticks(index + bar_width / 2)
     ax.set_xticklabels(['CUDA', 'Triton', 'Custom'])
     ax.legend()

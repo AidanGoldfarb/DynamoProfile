@@ -68,13 +68,15 @@ def compare_runtimes():
             
             #print(k0,k1,k2)
             modelname = k0.split()[0]
-            # print(modelname)
-            # for i,(cuda,triton) in enumerate(zip(arr0,arr1)):
-            #     if cuda-triton > 0 and diff(cuda,triton) > 10:
-            #         print(i)
+            if 'alex' in modelname:
+                print(modelname)
+                for i,(cuda,triton) in enumerate(zip(arr0,arr1)):
+                    print(cuda-triton)
+                    if cuda-triton > 0:# and diff(cuda,triton) > 5:
+                        print(i)
 
             #sanity check
-            plot_arrsum_vs_total(modelname,[arr0.sum(),arr1.sum(),arr2.sum()],[tot0,tot1,tot2])
+            #plot_arrsum_vs_total(modelname,[arr0.sum(),arr1.sum(),arr2.sum()],[tot0,tot1,tot2])
             
             # cuda = v0.sum()
             # triton = v1.sum()
