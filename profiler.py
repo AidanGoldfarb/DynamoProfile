@@ -56,7 +56,25 @@ def _extract_dict():
 def compare_runtimes():
     dct = unpickle_obj("raw_run_dct")
     df = pd.DataFrame.from_dict(dct, orient='index')
-    print(df.head())
+    for i,series in df.iterrows():
+        cuda_arr = np.array(series['cuda_arr'])
+        triton_arr = np.array(series['triton_arr'])
+        cust_arr = np.array(series['cust_arr'])
+
+        oracle = 0
+        for cuda,triton,cust in zip(cuda_arr,triton_arr,cust_arr):
+            oracle += np.min([cuda,triton,cust])
+        
+        cuda_e2e = series['cuda_e2e']
+        triton_e2e = series['triton_e2e']
+        cust_e2e = series['cust_e2e']
+        cuda_pure_e2e = series['cuda_pure_e2e']
+        triton_pure_e2e = series['triton_pure_e2e']
+
+        plot_arrsum_vs_total(
+            series.name,[cuda_arr.sum(),triton_arr.sum(),cust_arr.sum(),oracle,0,0],
+            [cuda_e2e,triton_e2e,cust_e2e,0,cuda_pure_e2e,triton_pure_e2e
+        ])
     # for modelname,data in dct.items():
     #     print(modelname)
     #     for k,v in data.items():
