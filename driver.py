@@ -11,8 +11,45 @@ from plotter import *
 # torch._dynamo.config.suppress_errors = True
 # torch._dynamo.config.cache_size_limit = 8
 
+def run_one(modelnm,rounds=10,reps=5,layers=1):
+    for reg,cust,pure in zip(VISION_MODELS,CUSTOM_VISION_MODELS,PURE_VISION_MODELS):
+        model = reg().to('cuda').eval()     
+        modelcomp = torch.compile(model)
+        mymodel = cust().to('cuda').eval()
+        
+        pmodel = pure().to('cuda').eval()
+        pmodelcomp = torch.compile(pmodel)
+        modelname = model.__class__.__name__.lower()
+        if modelnm not in modelname:
+            continue
+        
+        input_data = torch.rand(1, 3, 224, 224, device='cuda')
+        dct = {}
+        fast_layers = []
+        with torch.no_grad():
+            for _ in range(rounds):
+                for _ in range(reps):
+                    st = time.perf_counter_ns()
+                    for _ in range(layers):
+                        out = model(input_data)
+                    et = time.perf_counter_ns()
+                dct['cuda_arr'] = out[-1]
+                dct['cuda_e2e'] = et-st
+
+                #Triton
+                for _ in range(reps):
+                    st = time.perf_counter_ns()
+                    for _ in range(layers):
+                        out = modelcomp(input_data)
+                    et = time.perf_counter_ns()
+                dct['triton_arr'] = out[-1]
+                dct['triton_e2e'] = et-st
+                fast_layers.append(spedup_layers(dct))
+        for e in fast_layers:
+            print(e)
+
 #wall clock time
-def raw_run_all(reps=5):
+def raw_run_all(reps=5, layers=1):
     input_data = torch.rand(1, 3, 224, 224, device='cuda')
     run_data = {}
 
@@ -24,48 +61,57 @@ def raw_run_all(reps=5):
         pmodel = pure().to('cuda').eval()
         pmodelcomp = torch.compile(pmodel)
         modelname = model.__class__.__name__.lower()
+        if 'mobile' not in modelname:
+            continue
+        print(modelname)
 
         dct = {}
 
         #CUDA Reg
-        for _ in range(reps):
-            st = time.perf_counter_ns()
-            out = model(input_data)
-            et = time.perf_counter_ns()
-        dct['cuda_arr'] = out[-1]
-        dct['cuda_e2e'] = et-st
+        with torch.no_grad():
+            for _ in range(reps):
+                st = time.perf_counter_ns()
+                for _ in range(layers):
+                    out = model(input_data)
+                et = time.perf_counter_ns()
+            dct['cuda_arr'] = out[-1]
+            dct['cuda_e2e'] = et-st
 
-        #Triton
-        for _ in range(reps):
-            st = time.perf_counter_ns()
-            out = modelcomp(input_data)
-            et = time.perf_counter_ns()
-        dct['triton_arr'] = out[-1]
-        dct['triton_e2e'] = et-st
+            #Triton
+            for _ in range(reps):
+                st = time.perf_counter_ns()
+                for _ in range(layers):
+                    out = modelcomp(input_data)
+                et = time.perf_counter_ns()
+            dct['triton_arr'] = out[-1]
+            dct['triton_e2e'] = et-st
 
-        #Custom
-        for _ in range(reps):
-            st = time.perf_counter_ns()
-            out = mymodel(input_data)
-            et = time.perf_counter_ns()
-        dct['cust_arr'] = out[-1]
-        dct['cust_e2e'] = et-st
+            #Custom
+            for _ in range(reps):
+                st = time.perf_counter_ns()
+                for _ in range(layers):
+                    out = mymodel(input_data)
+                et = time.perf_counter_ns()
+            dct['cust_arr'] = out[-1]
+            dct['cust_e2e'] = et-st
 
-        #CUDA Pure
-        for _ in range(reps):
-            st = time.perf_counter_ns()
-            out = pmodel(input_data)
-            et = time.perf_counter_ns()
-        dct['cuda_pure_e2e'] = et-st
+            #CUDA Pure
+            for _ in range(reps):
+                st = time.perf_counter_ns()
+                for _ in range(layers):
+                    out = pmodel(input_data)
+                et = time.perf_counter_ns()
+            dct['cuda_pure_e2e'] = et-st
 
-        #TRITON Pure
-        for _ in range(reps):
-            st = time.perf_counter_ns()
-            out = pmodelcomp(input_data)
-            et = time.perf_counter_ns()
-        dct['triton_pure_e2e'] = et-st
+            #TRITON Pure
+            for _ in range(reps):
+                st = time.perf_counter_ns()
+                for _ in range(layers):
+                    out = pmodelcomp(input_data)
+                et = time.perf_counter_ns()
+            dct['triton_pure_e2e'] = et-st
 
-        run_data[modelname] = dct
+            run_data[modelname] = dct
     
     pickle_obj(run_data,"raw_run_dct")
 
@@ -130,10 +176,12 @@ def run_custom_resnet():
     print(f"triton_time    {triton_time:.4}")
     
 
-#TODO Check out graphs in figs, cust should be optimal
+#TODO lots of inconsistenies in which layers are faster. As of now run_one() will perform 10 runs and print which layers are faster
+# hard to find lots of consistency.
 def main():
+    run_one('mobile')
     #raw_run_all()
-    compare_runtimes()
+    #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
     #compare_cust_configs()
