@@ -45,4 +45,4 @@ def run_profiled(model,input_data,config,reps,layers=1):
             ) as prof:
                 for _ in range(reps):
                     model(input_data)
-    pickle_obj(prof.key_averages(group_by_input_shape=True).table(sort_by='cuda_time_total'), "strdata")
+    pickle_obj(prof.key_averages(group_by_input_shape=True).table(sort_by='cuda_time_total'), f"{config}")

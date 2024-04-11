@@ -64,59 +64,61 @@ def raw_run_all(reps=5, layers=1):
 
         print(modelname)
 
-        dct = {}
+        #dct = {}
 
-        #CUDA Reg 
-        #run_profiled(model,input_data,config,reps,layers=1)
-        run_profiled(model,input_data,"cuda_timed_nosync",reps,layers)
-        exit()
+        run_profiled(model,input_data,f"{modelname}_cuda_prof_sync",reps,layers)
+        run_profiled(modelcomp,input_data,f"{modelname}_triton_prof_sync",reps,layers)
+        run_profiled(mymodel,input_data,f"{modelname}_cust_prof_nosync",reps,layers)
+        run_profiled(pmodel,input_data,f"{modelname}_pure_prof_nosync",reps,layers)
 
-        with torch.no_grad():
-            for _ in range(reps):
-                st = time.perf_counter_ns()
-                for _ in range(layers):
-                    out = model(input_data)
-                et = time.perf_counter_ns()
-            dct['cuda_arr'] = out[-1]
-            dct['cuda_e2e'] = et-st
+        
+
+        # with torch.no_grad():
+        #     for _ in range(reps):
+        #         st = time.perf_counter_ns()
+        #         for _ in range(layers):
+        #             out = model(input_data)
+        #         et = time.perf_counter_ns()
+        #     dct['cuda_arr'] = out[-1]
+        #     dct['cuda_e2e'] = et-st
 
             #Triton
-            for _ in range(reps):
-                st = time.perf_counter_ns()
-                for _ in range(layers):
-                    out = modelcomp(input_data)
-                et = time.perf_counter_ns()
-            dct['triton_arr'] = out[-1]
-            dct['triton_e2e'] = et-st
+            # for _ in range(reps):
+            #     st = time.perf_counter_ns()
+            #     for _ in range(layers):
+            #         out = modelcomp(input_data)
+            #     et = time.perf_counter_ns()
+            # dct['triton_arr'] = out[-1]
+            # dct['triton_e2e'] = et-st
 
             #Custom
-            for _ in range(reps):
-                st = time.perf_counter_ns()
-                for _ in range(layers):
-                    out = mymodel(input_data)
-                et = time.perf_counter_ns()
-            dct['cust_arr'] = out[-1]
-            dct['cust_e2e'] = et-st
+            # for _ in range(reps):
+            #     st = time.perf_counter_ns()
+            #     for _ in range(layers):
+            #         out = mymodel(input_data)
+            #     et = time.perf_counter_ns()
+            # dct['cust_arr'] = out[-1]
+            # dct['cust_e2e'] = et-st
 
             #CUDA Pure
-            for _ in range(reps):
-                st = time.perf_counter_ns()
-                for _ in range(layers):
-                    out = pmodel(input_data)
-                et = time.perf_counter_ns()
-            dct['cuda_pure_e2e'] = et-st
+            # for _ in range(reps):
+            #     st = time.perf_counter_ns()
+            #     for _ in range(layers):
+            #         out = pmodel(input_data)
+            #     et = time.perf_counter_ns()
+            # dct['cuda_pure_e2e'] = et-st
 
             #TRITON Pure
-            for _ in range(reps):
-                st = time.perf_counter_ns()
-                for _ in range(layers):
-                    out = pmodelcomp(input_data)
-                et = time.perf_counter_ns()
-            dct['triton_pure_e2e'] = et-st
+            # for _ in range(reps):
+            #     st = time.perf_counter_ns()
+            #     for _ in range(layers):
+            #         out = pmodelcomp(input_data)
+            #     et = time.perf_counter_ns()
+            # dct['triton_pure_e2e'] = et-st
 
-            run_data[modelname] = dct
+            # run_data[modelname] = dct
     
-    pickle_obj(run_data,"raw_run_dct")
+    # pickle_obj(run_data,"raw_run_dct")
 
 def run_all(verbose,device):
     #Vision
@@ -179,12 +181,11 @@ def run_custom_resnet():
     print(f"triton_time    {triton_time:.4}")
     
 
-#TODO lots of inconsistenies in which layers are faster. As of now run_one() will perform 10 runs and print which layers are faster
-# hard to find lots of consistency.
+#TODO Make sure models in /vision/../models cover all areas. Will need a pure, sync'd and unsync'd version of cust?
 def main():
     #run_one('squeeze')
-    #raw_run_all()
-    profile_autogradtraces()
+    raw_run_all()
+    #profile_autogradtraces()
     #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
