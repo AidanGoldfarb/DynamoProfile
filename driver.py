@@ -70,7 +70,7 @@ def raw_run_all(reps=5, layers=1):
         #run_profiled(model,input_data,config,reps,layers=1)
         run_profiled(model,input_data,"cuda_timed_nosync",reps,layers)
         exit()
-        
+
         with torch.no_grad():
             for _ in range(reps):
                 st = time.perf_counter_ns()
@@ -183,7 +183,8 @@ def run_custom_resnet():
 # hard to find lots of consistency.
 def main():
     #run_one('squeeze')
-    raw_run_all()
+    #raw_run_all()
+    profile_autogradtraces()
     #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()

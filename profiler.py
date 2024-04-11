@@ -1,6 +1,7 @@
 from util import *
 from plotter import *
 from itertools import islice
+from io import StringIO
 
 
 """
@@ -237,20 +238,19 @@ def profile_hooktraces(filenames, device='all'):
     # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
 
 def profile_autogradtraces(verbose=False):
-    filenames = FILENAMES["resnet"]
-    cuda = parse_autograd_json(filenames[GPU]+"_nohooks.trace")
-    # triton = parse_autograd_json(filenames[TRITON]+"_nohooks.trace")
-    cust = parse_autograd_json("myresnet_default_gpu_nohooks.trace")
+    str = unpickle_obj("strdata")
+    str = str.replace('-','') #i hate you
     
-    df = merge_frames([cuda,cust])
-    #df = df.loc[df['Layer'].str.contains('conv')]
-    df.dropna(axis=1,how='all',inplace=True)
-    df = reorder_cols(df)
-    df = add_speedup(df)
-    df.dropna(axis=0,subset=['Speedup'])
-    df.sort_values(by="Speedup",axis=0,ascending=False,inplace=True)
+    columns = str.split('\n')[1].split('  ')
+    columns = [h for h in columns if h != '']
 
-    
+    df = pd.read_fwf(StringIO(str))
+    df.dropna(axis=1,how='all',inplace=True)
     print(df.to_string())
+    # lst = []
+
+    # for i,line in enumerate(str.split('\n')[3:]):
+        #print(i,line)
+    #print(df.head())
     
     
