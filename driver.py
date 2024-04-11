@@ -3,7 +3,7 @@ from tqdm import tqdm
 import torchvision.models as models
 from util import *
 from prepare_model_and_data import prepare_model
-from runner import run
+from runner import run_timed,run_profiled
 from profiler import *
 from plotter import *
 
@@ -61,13 +61,16 @@ def raw_run_all(reps=5, layers=1):
         pmodel = pure().to('cuda').eval()
         pmodelcomp = torch.compile(pmodel)
         modelname = model.__class__.__name__.lower()
-        if 'mobile' not in modelname:
-            continue
+
         print(modelname)
 
         dct = {}
 
-        #CUDA Reg
+        #CUDA Reg 
+        #run_profiled(model,input_data,config,reps,layers=1)
+        run_profiled(model,input_data,"cuda_timed_nosync",reps,layers)
+        exit()
+        
         with torch.no_grad():
             for _ in range(reps):
                 st = time.perf_counter_ns()
@@ -179,8 +182,8 @@ def run_custom_resnet():
 #TODO lots of inconsistenies in which layers are faster. As of now run_one() will perform 10 runs and print which layers are faster
 # hard to find lots of consistency.
 def main():
-    run_one('mobile')
-    #raw_run_all()
+    #run_one('squeeze')
+    raw_run_all()
     #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()

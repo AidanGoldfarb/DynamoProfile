@@ -85,15 +85,15 @@ def compare_runtimes():
         cuda_pure_e2e = series['cuda_pure_e2e']
         triton_pure_e2e = series['triton_pure_e2e']
 
-        for i,(cuda,triton,cust) in enumerate(zip(cuda_arr,triton_arr,cust_arr)):
-            #print(cuda,triton,cust)
-            if triton < cuda and diff(triton,cuda) > 10 and diff(triton,cust) > 10:
-                print(i,diff(triton,cuda))
+        # for i,(cuda,triton,cust) in enumerate(zip(cuda_arr,triton_arr,cust_arr)):
+        #     #print(cuda,triton,cust)
+        #     if triton < cuda and diff(triton,cuda) > 10 and diff(triton,cust) > 10:
+        #         print(i,diff(triton,cuda))
 
-        # plot_arrsum_vs_total(
-        #     series.name,[cuda_arr.sum(),triton_arr.sum(),cust_arr.sum(),oracle,0,0],
-        #     [cuda_e2e,triton_e2e,cust_e2e,0,cuda_pure_e2e,triton_pure_e2e
-        # ])
+        plot_arrsum_vs_total(
+            series.name,[cuda_arr.sum(),triton_arr.sum(),cust_arr.sum(),oracle,0,0],
+            [cuda_e2e,triton_e2e,cust_e2e,0,cuda_pure_e2e,triton_pure_e2e
+        ])
     # for modelname,data in dct.items():
     #     print(modelname)
     #     for k,v in data.items():
