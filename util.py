@@ -4,8 +4,9 @@ import torch
 import torchvision.models as models
 import numpy as np
 import pandas as pd
-
+from io import StringIO
 import numbers
+from tqdm import tqdm
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -50,6 +51,16 @@ BOLD = '\033[1m'
 ENDC = '\033[0m'
 #DIR = "/Users/aidangoldfarb/Projects/DynamoProfile/"
 DIR = "/data/agoldf6/DynamoProfile/"
+
+def trace_to_df(trace):
+    trace = trace.replace('-','') #i hate you
+    
+    # columns = trace.split('\n')[1].split('  ')
+    # columns = [h for h in columns if h != '']
+
+    df = pd.read_fwf(StringIO(trace))
+    df.dropna(axis=1,how='all',inplace=True)
+    return df
 
 def pickle_obj(obj,filename):
     dr = ""

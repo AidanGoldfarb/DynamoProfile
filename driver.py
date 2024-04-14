@@ -62,11 +62,11 @@ def raw_run_all(reps=5, layers=1):
         pmodelcomp = torch.compile(pmodel)
         modelname = model.__class__.__name__.lower()
 
-        print(modelname)
+        print(modelname,flush=True)
 
         #dct = {}
-
-        run_profiled(model,input_data,f"{modelname}_cuda_prof_sync",reps,layers)
+        torch._dynamo.reset()
+        #run_profiled(model,input_data,f"{modelname}_cuda_prof_sync",reps,layers)
         run_profiled(modelcomp,input_data,f"{modelname}_triton_prof_sync",reps,layers)
         run_profiled(mymodel,input_data,f"{modelname}_cust_prof_nosync",reps,layers)
         run_profiled(pmodel,input_data,f"{modelname}_pure_prof_nosync",reps,layers)

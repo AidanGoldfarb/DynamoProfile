@@ -1,7 +1,7 @@
 from util import *
 from plotter import *
 from itertools import islice
-from io import StringIO
+
 
 
 """
@@ -238,14 +238,7 @@ def profile_hooktraces(filenames, device='all'):
     # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
 
 def profile_autogradtraces(verbose=False):
-    str = unpickle_obj("strdata")
-    str = str.replace('-','') #i hate you
-    
-    columns = str.split('\n')[1].split('  ')
-    columns = [h for h in columns if h != '']
-
-    df = pd.read_fwf(StringIO(str))
-    df.dropna(axis=1,how='all',inplace=True)
+    df = unpickle_obj("strdata")
     print(df.to_string())
     # lst = []
 
