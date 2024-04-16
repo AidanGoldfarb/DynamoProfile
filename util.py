@@ -14,9 +14,19 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 """
     Models
 """
+#Unsynced, Timed
 VISION_MODELS = [models.resnet50,models.googlenet,models.densenet121,models.squeezenet1_1,models.alexnet,models.mobilenet_v2]
-CUSTOM_VISION_MODELS = [models.myresnet50,models.mygooglenet,models.mydensenet121,models.mysqueezenet1_1,models.myalexnet,models.mymobilenet_v2]
+
+#Unsynced, Untimed
 PURE_VISION_MODELS = [models.presnet50,models.pgooglenet,models.pdensenet121,models.psqueezenet1_1,models.palexnet,models.pmobilenet_v2]
+
+#Synced, Timed
+CUSTOM_VISION_MODELS = [models.myresnet50,models.mygooglenet,models.mydensenet121,models.mysqueezenet1_1,models.myalexnet,models.mymobilenet_v2]
+
+#Synced, Untimed
+SYNC_VISION_MODELS = [models.sresnet50,models.sgooglenet,models.sdensenet121,models.ssqueezenet1_1,models.salexnet,models.smobilenet_v2]
+
+
 """"""
 
 """

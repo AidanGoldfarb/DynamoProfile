@@ -50,75 +50,38 @@ def run_one(modelnm,rounds=10,reps=5,layers=1):
 
 #wall clock time
 def raw_run_all(reps=5, layers=1):
+    """
+        pure: Unsynced, Untimed
+        timed: Unsynced, Timed
+        sync: Synced, Untimed
+        timed_sync: Synced, Timed
+        
+    """
     input_data = torch.rand(1, 3, 224, 224, device='cuda')
-    run_data = {}
+    for model in VISION_MODELS:
+        pure = model(timed=False,sync=False,cust=False)
+        timed = model(timed=True,sync=False,cust=False)
+        sync = model(timed=False,sync=True,cust=False)
+        timed_sync = model(timed=True,sync=True,cust=False)
 
-    for reg,cust,pure in zip(VISION_MODELS,CUSTOM_VISION_MODELS,PURE_VISION_MODELS):
-        model = reg().to('cuda').eval()     
-        modelcomp = torch.compile(model)
-        mymodel = cust().to('cuda').eval()
-        
-        pmodel = pure().to('cuda').eval()
-        pmodelcomp = torch.compile(pmodel)
-        modelname = model.__class__.__name__.lower()
+        pure_cust = model(timed=False,sync=False,cust=True)
+        timed_cust = model(timed=True,sync=False,cust=True)
+        sync_cust = model(timed=False,sync=True,cust=True)
+        timed_sync_cust = model(timed=True,sync=True,cust=True)
 
+        modelname = pure.__class__.__name__.lower()
         print(modelname,flush=True)
+        exit()
+        #CUDA 
+        run_profiled(reg,input_data,f"{modelname}_impure_cuda_prof_unsync",reps,layers)
+        run_profiled(pure,input_data,f"{modelname}_pure_cuda_prof_unsync",reps,layers)
+        run_profiled(cust,input_data,f"{modelname}_impure_cuda_prof_sync",reps,layers)
+        run_profiled(sync,input_data,f"{modelname}_pure_cuda_prof_sync",reps,layers)
 
-        #dct = {}
-        torch._dynamo.reset()
-        #run_profiled(model,input_data,f"{modelname}_cuda_prof_sync",reps,layers)
-        run_profiled(modelcomp,input_data,f"{modelname}_triton_prof_sync",reps,layers)
-        run_profiled(mymodel,input_data,f"{modelname}_cust_prof_nosync",reps,layers)
-        run_profiled(pmodel,input_data,f"{modelname}_pure_prof_nosync",reps,layers)
-
-        
-
-        # with torch.no_grad():
-        #     for _ in range(reps):
-        #         st = time.perf_counter_ns()
-        #         for _ in range(layers):
-        #             out = model(input_data)
-        #         et = time.perf_counter_ns()
-        #     dct['cuda_arr'] = out[-1]
-        #     dct['cuda_e2e'] = et-st
-
-            #Triton
-            # for _ in range(reps):
-            #     st = time.perf_counter_ns()
-            #     for _ in range(layers):
-            #         out = modelcomp(input_data)
-            #     et = time.perf_counter_ns()
-            # dct['triton_arr'] = out[-1]
-            # dct['triton_e2e'] = et-st
-
-            #Custom
-            # for _ in range(reps):
-            #     st = time.perf_counter_ns()
-            #     for _ in range(layers):
-            #         out = mymodel(input_data)
-            #     et = time.perf_counter_ns()
-            # dct['cust_arr'] = out[-1]
-            # dct['cust_e2e'] = et-st
-
-            #CUDA Pure
-            # for _ in range(reps):
-            #     st = time.perf_counter_ns()
-            #     for _ in range(layers):
-            #         out = pmodel(input_data)
-            #     et = time.perf_counter_ns()
-            # dct['cuda_pure_e2e'] = et-st
-
-            #TRITON Pure
-            # for _ in range(reps):
-            #     st = time.perf_counter_ns()
-            #     for _ in range(layers):
-            #         out = pmodelcomp(input_data)
-            #     et = time.perf_counter_ns()
-            # dct['triton_pure_e2e'] = et-st
-
-            # run_data[modelname] = dct
-    
-    # pickle_obj(run_data,"raw_run_dct")
+        #Triton
+        run_profiled(regComp,input_data,f"{modelname}_impure_triton_prof_unsync",reps,layers)
+        run_profiled(pureComp,input_data,f"{modelname}_pure_triton_prof_unsync",reps,layers)
+        run_profiled(syncComp,input_data,f"{modelname}_pure_triton_prof_sync",reps,layers)
 
 def run_all(verbose,device):
     #Vision
@@ -181,9 +144,9 @@ def run_custom_resnet():
     print(f"triton_time    {triton_time:.4}")
     
 
-#TODO Make sure models in /vision/../models cover all areas. Will need a pure, sync'd and unsync'd version of cust?
+#TODO Add different forward methods to Resnet
 def main():
-    #run_one('squeeze')
+    #run_one('res')
     raw_run_all()
     #profile_autogradtraces()
     #compare_runtimes()
