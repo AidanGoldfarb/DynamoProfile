@@ -59,29 +59,39 @@ def raw_run_all(reps=5, layers=1):
     """
     input_data = torch.rand(1, 3, 224, 224, device='cuda')
     for model in VISION_MODELS:
-        pure = model(timed=False,sync=False,cust=False)
-        timed = model(timed=True,sync=False,cust=False)
-        sync = model(timed=False,sync=True,cust=False)
-        timed_sync = model(timed=True,sync=True,cust=False)
+        pure = model(timed=False,sync=False,cust=False).to('cuda').eval()
+        modelname = pure.__class__.__name__.lower()
+        # if 'res' in modelname:# or 'dense' in modelname or 'squeeze' in modelname:
+        #     continue 
+        timed = model(timed=True,sync=False,cust=False).to('cuda').eval()
+        sync = model(timed=False,sync=True,cust=False).to('cuda').eval()
+        timed_sync = model(timed=True,sync=True,cust=False).to('cuda').eval()
 
-        pure_cust = model(timed=False,sync=False,cust=True)
-        timed_cust = model(timed=True,sync=False,cust=True)
-        sync_cust = model(timed=False,sync=True,cust=True)
-        timed_sync_cust = model(timed=True,sync=True,cust=True)
+        pureComp = torch.compile(pure)
+        timedComp = torch.compile(timed)
+        syncComp = torch.compile(sync)
+        timed_syncComp = torch.compile(timed_sync)
+
+        # pure_cust = model(timed=False,sync=False,cust=True)
+        # timed_cust = model(timed=True,sync=False,cust=True)
+        # sync_cust = model(timed=False,sync=True,cust=True)
+        # timed_sync_cust = model(timed=True,sync=True,cust=True)
 
         modelname = pure.__class__.__name__.lower()
-        print(modelname,flush=True)
-        exit()
+        #print(modelname,flush=True)
+
         #CUDA 
-        run_profiled(reg,input_data,f"{modelname}_impure_cuda_prof_unsync",reps,layers)
-        run_profiled(pure,input_data,f"{modelname}_pure_cuda_prof_unsync",reps,layers)
-        run_profiled(cust,input_data,f"{modelname}_impure_cuda_prof_sync",reps,layers)
-        run_profiled(sync,input_data,f"{modelname}_pure_cuda_prof_sync",reps,layers)
+        run_profiled(pure,input_data,f"{modelname}_pure_cuda_prof",reps,layers)
+        run_profiled(timed,input_data,f"{modelname}_timed_cuda_prof",reps,layers)
+        run_profiled(sync,input_data,f"{modelname}_sync_cuda_prof",reps,layers)
+        run_profiled(timed_sync,input_data,f"{modelname}_timedsync_cuda_prof",reps,layers)
+        
 
         #Triton
-        run_profiled(regComp,input_data,f"{modelname}_impure_triton_prof_unsync",reps,layers)
-        run_profiled(pureComp,input_data,f"{modelname}_pure_triton_prof_unsync",reps,layers)
-        run_profiled(syncComp,input_data,f"{modelname}_pure_triton_prof_sync",reps,layers)
+        run_profiled(pureComp,input_data,f"{modelname}_pure_triton_prof",reps,layers)
+        run_profiled(timedComp,input_data,f"{modelname}_timed_triton_prof",reps,layers)
+        run_profiled(syncComp,input_data,f"{modelname}_sync_triton_prof",reps,layers)
+        run_profiled(timed_syncComp,input_data,f"{modelname}_timedsync_triton_prof",reps,layers)
 
 def run_all(verbose,device):
     #Vision
@@ -142,9 +152,8 @@ def run_custom_resnet():
         triton_time += series['Time_resnet_triton_default']
     print(f"custom_time    {custom_time:.4}")
     print(f"triton_time    {triton_time:.4}")
-    
 
-#TODO Add different forward methods to Resnet
+#TODO mobilenetv2_sync_triton_pro, 
 def main():
     #run_one('res')
     raw_run_all()

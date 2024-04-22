@@ -36,18 +36,22 @@ def run_timed(model,input_data,config,reps,layers=1):
 
 def run_profiled(model,input_data,config,reps,layers=1): 
     print(f'\trunning {config}...',end='',flush=True)
+    if is_cached(config):
+        print('...in cache')
+        return
     model(input_data)
-    # with torch.no_grad():
-    #     for _ in tqdm(range(reps)):
-    #         with torch.autograd.profiler.profile(
-    #             use_cuda=True,
-    #             record_shapes=True, 
-    #             profile_memory=False, 
-    #             with_stack=True
-    #         ) as prof:
-    #             model(input_data)
+    with torch.no_grad():
+        for _ in tqdm(range(reps)):
+            with torch.autograd.profiler.profile(
+                use_cuda=True,
+                record_shapes=True, 
+                profile_memory=False, 
+                with_stack=True
+            ) as prof:
+                _,arr = model(input_data)
     
-    # data = prof.key_averages(group_by_input_shape=True).table(sort_by='cuda_time_total')
-    # df = trace_to_df(data)
-    # pickle_obj(df, f"{config}")
+    data = prof.key_averages(group_by_input_shape=True).table(sort_by='cuda_time_total')
+    df = trace_to_df(data)
+    
+    pickle_obj((df,arr), f"{config}")
     print('...done')

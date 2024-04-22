@@ -238,12 +238,13 @@ def profile_hooktraces(filenames, device='all'):
     # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
 
 def profile_autogradtraces(verbose=False):
-    df = unpickle_obj("strdata")
-    print(df.to_string())
-    # lst = []
-
-    # for i,line in enumerate(str.split('\n')[3:]):
-        #print(i,line)
-    #print(df.head())
-    
+    for file in sorted(os.listdir(DIR+"cache/autogradtraces")):
+        df,arr = unpickle_obj('autogradtraces/'+file)
+        if arr:
+            print(df.to_string())
+            sum = np.sum(arr)
+            print('arrsum:',sum/1e6)
+            print('colsum:', df['CUDA total'].sum())
+            exit()
+            
     

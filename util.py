@@ -1,4 +1,4 @@
-import warnings,os,time,pickle,typing,json
+import warnings,os,time,pickle,typing,json,re
 warnings.simplefilter(action='ignore', category=FutureWarning) #for googlenet
 import torch
 import torchvision.models as models
@@ -62,50 +62,48 @@ ENDC = '\033[0m'
 #DIR = "/Users/aidangoldfarb/Projects/DynamoProfile/"
 DIR = "/data/agoldf6/DynamoProfile/"
 
+def _convert_and_strip(value):
+    return float(value[:-2]), value[-2:]
+
 def trace_to_df(trace):
     trace = trace.replace('-','') #i hate you
-    
-    # columns = trace.split('\n')[1].split('  ')
-    # columns = [h for h in columns if h != '']
+    last_header = 'Input Shapes'
+    mark = re.search(rf'{last_header}(\D)', trace)
+    assert mark
 
-    df = pd.read_fwf(StringIO(trace))
-    df.dropna(axis=1,how='all',inplace=True)
+    header_end_index = mark.start(1)
+
+    header_part = trace[:header_end_index]
+    data_part = trace[header_end_index:]
+    modified_header = re.sub(r'(\S) (\S)', r'\1_\2', header_part)
+    modified_data_str = modified_header + data_part
+
+    df = pd.read_fwf(StringIO(modified_data_str))
+    
+    print('\n')
+    print(df.to_string())
+    exit()
     return df
+
 
 def pickle_obj(obj,filename):
     dr = ""
-    if "nohooks" in filename:
+    if '_prof' in filename:
         dr = "autogradtraces/"
-    elif 'trace' in filename:
-        dr = "hooktraces/"
-        assert type(obj) is np.ndarray
-        assert type(obj[0][0]) is np.str_
-        assert type(obj[0][1]) is np.float64
-    
     with open(os.path.join(DIR, f"cache/{dr}"+filename+".pkl"), 'wb') as f:
         pickle.dump(obj, f)
 
 def unpickle_obj(filename):
     dr = ""
-    if "nohooks" in filename:
-        dr = "autogradtraces/"
-    elif 'trace' in filename:
-        dr = "hooktraces/"
-    with open(os.path.join(DIR, f"cache/{dr}"+filename+".pkl"), 'rb') as f:
+    with open(os.path.join(DIR, f"cache/{dr}"+filename), 'rb') as f:
         return pickle.load(f)
 
-def is_cached(metadata):
-    if "nohooks" in metadata:
-        filename=metadata+".pkl"
+def is_cached(config):
+    if "prof" in config:
+        filename=config+".pkl"
         for file in os.listdir(DIR+"cache/autogradtraces/"):
             if filename in str(file):
                 return True
-    else:
-        filename = metadata+".pkl"
-        for file in os.listdir(DIR+"cache/hooktraces/"):
-            if filename in str(file):
-                return True
-    return False
 
 def diff(f0,f1):
     if f0 == 0 and f1 == 0:
