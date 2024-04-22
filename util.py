@@ -62,8 +62,8 @@ ENDC = '\033[0m'
 #DIR = "/Users/aidangoldfarb/Projects/DynamoProfile/"
 DIR = "/data/agoldf6/DynamoProfile/"
 
-def _convert_and_strip(value):
-    return float(value[:-2]), value[-2:]
+def convert_to_microseconds(value):
+    return value.replace('us', '').replace('%', '')
 
 def trace_to_df(trace):
     trace = trace.replace('-','') #i hate you
@@ -80,9 +80,6 @@ def trace_to_df(trace):
 
     df = pd.read_fwf(StringIO(modified_data_str))
     
-    print('\n')
-    print(df.to_string())
-    exit()
     return df
 
 

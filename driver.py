@@ -153,11 +153,11 @@ def run_custom_resnet():
     print(f"custom_time    {custom_time:.4}")
     print(f"triton_time    {triton_time:.4}")
 
-#TODO mobilenetv2_sync_triton_pro, 
+#TODO Remove MS, %
 def main():
     #run_one('res')
-    raw_run_all()
-    #profile_autogradtraces()
+    #raw_run_all()
+    profile_autogradtraces()
     #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()

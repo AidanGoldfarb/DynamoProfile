@@ -240,11 +240,13 @@ def profile_hooktraces(filenames, device='all'):
 def profile_autogradtraces(verbose=False):
     for file in sorted(os.listdir(DIR+"cache/autogradtraces")):
         df,arr = unpickle_obj('autogradtraces/'+file)
+        for c in df.columns:
+            df[c] = df[c].apply(convert_to_microseconds)
         if arr:
             print(df.to_string())
             sum = np.sum(arr)
             print('arrsum:',sum/1e6)
-            print('colsum:', df['CUDA total'].sum())
+            print('colsum:', df['CUDA_total'].sum())
             exit()
             
     
