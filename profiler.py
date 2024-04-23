@@ -240,8 +240,23 @@ def profile_hooktraces(filenames, device='all'):
 def profile_autogradtraces(verbose=False):
     for file in sorted(os.listdir(DIR+"cache/autogradtraces")):
         df,arr = unpickle_obj('autogradtraces/'+file)
+        
+        #delete when rerunning
+        df.rename(columns={'Self_CPU': 'Self_CPU_us'},inplace=True)
+        df.rename(columns={'CPU_total': 'CPU_total_us'},inplace=True)
+        df.rename(columns={'CPU_time_avg': 'CPU_time_avg_us'},inplace=True)
+        df.rename(columns={'Self_CUDA': 'Self_CUDA_us'},inplace=True)
+        df.rename(columns={'CUDA_total': 'CUDA_total_us'},inplace=True)
+        df.rename(columns={'CUDA_time_avg': 'CUDA_time_avg_us'},inplace=True)
+
         for c in df.columns:
-            df[c] = df[c].apply(convert_to_microseconds)
+            if 'us' in c:
+                df[c] = df[c].apply(convert_to_microseconds)
+            if '%' in c:
+                df[c] = df[c].apply(convert_to_microseconds)
+
+        print(df.to_string())
+        exit()
         if arr:
             print(df.to_string())
             sum = np.sum(arr)

@@ -63,7 +63,7 @@ ENDC = '\033[0m'
 DIR = "/data/agoldf6/DynamoProfile/"
 
 def convert_to_microseconds(value):
-    return value.replace('us', '').replace('%', '')
+    return float(str(value).replace('us', '').replace('%', ''))
 
 def trace_to_df(trace):
     trace = trace.replace('-','') #i hate you
@@ -79,7 +79,15 @@ def trace_to_df(trace):
     modified_data_str = modified_header + data_part
 
     df = pd.read_fwf(StringIO(modified_data_str))
-    
+
+
+    df.rename(columns={'Self_CPU': 'Self_CPU_us'},inplace=True)
+    df.rename(columns={'CPU_total': 'CPU_total_us'},inplace=True)
+    df.rename(columns={'CPU_time_avg': 'CPU_time_avg_us'},inplace=True)
+    df.rename(columns={'Self_CUDA': 'Self_CUDA_us'},inplace=True)
+    df.rename(columns={'CUDA_total': 'CUDA_total_us'},inplace=True)
+    df.rename(columns={'CUDA_time_avg': 'CUDA_time_avg_us'},inplace=True)
+
     return df
 
 
