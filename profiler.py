@@ -237,31 +237,43 @@ def profile_hooktraces(filenames, device='all'):
     # plot_rt_diff(gpu_df,triton_df, modelname=modelname,config="gpu vs triton",filter="Conv")
     # plot_rt_diff(interp_df,compiled_df,title= modelname +" interp vs cpp")
 
-def profile_autogradtraces(verbose=False):
-    for file in sorted(os.listdir(DIR+"cache/autogradtraces")):
-        df,arr = unpickle_obj('autogradtraces/'+file)
+def pull_data(file):
+    df,arr = unpickle_obj('autogradtraces/'+file)
         
-        #delete when rerunning
-        df.rename(columns={'Self_CPU': 'Self_CPU_us'},inplace=True)
-        df.rename(columns={'CPU_total': 'CPU_total_us'},inplace=True)
-        df.rename(columns={'CPU_time_avg': 'CPU_time_avg_us'},inplace=True)
-        df.rename(columns={'Self_CUDA': 'Self_CUDA_us'},inplace=True)
-        df.rename(columns={'CUDA_total': 'CUDA_total_us'},inplace=True)
-        df.rename(columns={'CUDA_time_avg': 'CUDA_time_avg_us'},inplace=True)
+    #delete when rerunning
+    df.rename(columns={'Self_CPU': 'Self_CPU_us'},inplace=True)
+    df.rename(columns={'CPU_total': 'CPU_total_us'},inplace=True)
+    df.rename(columns={'CPU_time_avg': 'CPU_time_avg_us'},inplace=True)
+    df.rename(columns={'Self_CUDA': 'Self_CUDA_us'},inplace=True)
+    df.rename(columns={'CUDA_total': 'CUDA_total_us'},inplace=True)
+    df.rename(columns={'CUDA_time_avg': 'CUDA_time_avg_us'},inplace=True)
 
-        for c in df.columns:
-            if 'us' in c:
-                df[c] = df[c].apply(convert_to_microseconds)
-            if '%' in c:
-                df[c] = df[c].apply(convert_to_microseconds)
+    for c in df.columns:
+        if 'us' in c:
+            df[c] = df[c].apply(convert_to_microseconds)
+        if '%' in c:
+            df[c] = df[c].apply(convert_to_microseconds)
 
-        print(df.to_string())
-        exit()
-        if arr:
-            print(df.to_string())
-            sum = np.sum(arr)
-            print('arrsum:',sum/1e6)
-            print('colsum:', df['CUDA_total'].sum())
-            exit()
+    arrsum = None
+    if arr:
+        arrsum = np.sum(arr)/1e3
+    cuda_total_sum = df['CUDA_total_us'].sum()
+    cuda_self_sum = df['Self_CUDA_us'].sum()
+    return cuda_total_sum,cuda_self_sum,arrsum
+
+def profile_autogradtraces(verbose=False):
+    files = [f for f in sorted(os.listdir(DIR+"cache/autogradtraces")) if os.path.isfile(os.path.join(DIR+"cache/autogradtraces", f))]
+
+    for file_lst in chunker(files,8):
+        modelname = file_lst[0].split('_')[0]
+        pure_cuda = pull_data(file_lst[0])
+        pure_triton = pull_data(file_lst[1])
+        sync_cuda = pull_data(file_lst[2])
+        sync_triton = pull_data(file_lst[3])
+        timed_cuda = pull_data(file_lst[4])
+        timed_triton = pull_data(file_lst[5])
+        timedsync_cuda = pull_data(file_lst[6])
+        timedsync_triton = pull_data(file_lst[7])
+        plot_benchmark_results([pure_cuda,pure_triton,sync_cuda,sync_triton,timed_cuda,timed_triton,timedsync_cuda,timedsync_triton],modelname)
             
     

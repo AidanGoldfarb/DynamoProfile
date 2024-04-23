@@ -62,8 +62,11 @@ ENDC = '\033[0m'
 #DIR = "/Users/aidangoldfarb/Projects/DynamoProfile/"
 DIR = "/data/agoldf6/DynamoProfile/"
 
+def chunker(seq, size):
+    return [seq[pos:pos + size] for pos in range(0, len(seq), size)]
+
 def convert_to_microseconds(value):
-    return float(str(value).replace('us', '').replace('%', ''))
+    return float(str(value).replace('us', '').replace('%', '').replace('ms',''))
 
 def trace_to_df(trace):
     trace = trace.replace('-','') #i hate you
@@ -88,8 +91,13 @@ def trace_to_df(trace):
     df.rename(columns={'CUDA_total': 'CUDA_total_us'},inplace=True)
     df.rename(columns={'CUDA_time_avg': 'CUDA_time_avg_us'},inplace=True)
 
-    return df
+    for c in df.columns:
+        if 'us' in c:
+            df[c] = df[c].apply(convert_to_microseconds)
+        if '%' in c:
+            df[c] = df[c].apply(convert_to_microseconds)
 
+    return df
 
 def pickle_obj(obj,filename):
     dr = ""

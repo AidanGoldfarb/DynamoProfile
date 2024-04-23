@@ -153,7 +153,7 @@ def run_custom_resnet():
     print(f"custom_time    {custom_time:.4}")
     print(f"triton_time    {triton_time:.4}")
 
-#TODO Remove MS, %
+#TODO graph
 def main():
     #run_one('res')
     #raw_run_all()
