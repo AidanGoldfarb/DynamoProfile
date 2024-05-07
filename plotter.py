@@ -5,11 +5,11 @@ import numpy as np
 
 def plot_benchmark_results(data,modelname):
     # Labels for the bars and groups
-    bar_labels = ['CUDA_total', 'CUDA_Self', 'Arr sum']
+    bar_labels = ['CUDA_total', 'CUDA_Self', 'Arr sum', 'End to end']
     group_labels = ['pure_cuda', 'pure_triton', 'sync_cuda', 'sync_triton', 'timed_cuda', 'timed_triton', 'timed_sync_cuda', 'timedsync_triton']
     
     # Colors for each bar
-    colors = ['red', 'green', 'blue']
+    colors = ['red', 'green', 'blue', 'yellow']
     
     # Number of groups
     n_groups = len(data)
@@ -33,6 +33,7 @@ def plot_benchmark_results(data,modelname):
     ax.set_xticks([i * group_width + bar_width for i in range(n_groups)])
     ax.set_xticklabels(group_labels, rotation=45, ha='right')
     ax.set_title(modelname)
+    plt.ylabel("runtime [us]")
     
     # Creating custom legend handles manually
     from matplotlib.patches import Patch
@@ -43,7 +44,7 @@ def plot_benchmark_results(data,modelname):
     
     # Show the plot
     plt.tight_layout()
-    plt.savefig('figs/'+modelname)
+    plt.savefig('figs/full/'+modelname)
 
 def plot_arrsum_vs_total(modelname, arr_sums, tots):
     # Ensure the inputs are correctly sized

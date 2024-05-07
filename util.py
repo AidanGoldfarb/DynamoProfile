@@ -66,7 +66,7 @@ def chunker(seq, size):
     return [seq[pos:pos + size] for pos in range(0, len(seq), size)]
 
 def convert_to_microseconds(value):
-    return float(str(value).replace('us', '').replace('%', '').replace('ms',''))
+    return float(str(value).replace('us', '').replace('%', '').replace('ms','').replace('s',''))
 
 def trace_to_df(trace):
     trace = trace.replace('-','') #i hate you
@@ -101,7 +101,7 @@ def trace_to_df(trace):
 
 def pickle_obj(obj,filename):
     dr = ""
-    if '_prof' in filename:
+    if '_prof' in filename or "e2e" in filename:
         dr = "autogradtraces/"
     with open(os.path.join(DIR, f"cache/{dr}"+filename+".pkl"), 'wb') as f:
         pickle.dump(obj, f)

@@ -78,6 +78,8 @@ def raw_run_all(reps=5, layers=1):
         # timed_sync_cust = model(timed=True,sync=True,cust=True)
 
         modelname = pure.__class__.__name__.lower()
+        if 'alex' not in modelname:
+            continue
         #print(modelname,flush=True)
 
         #CUDA 
@@ -92,6 +94,20 @@ def raw_run_all(reps=5, layers=1):
         run_profiled(timedComp,input_data,f"{modelname}_timed_triton_prof",reps,layers)
         run_profiled(syncComp,input_data,f"{modelname}_sync_triton_prof",reps,layers)
         run_profiled(timed_syncComp,input_data,f"{modelname}_timedsync_triton_prof",reps,layers)
+
+
+        #CUDAnoprof
+        run_profiled(pure,input_data,f"{modelname}_pure_cuda_e2e",reps,layers,profile=False)
+        run_profiled(timed,input_data,f"{modelname}_timed_cuda_e2e",reps,layers,profile=False)
+        run_profiled(sync,input_data,f"{modelname}_sync_cuda_e2e",reps,layers,profile=False)
+        run_profiled(timed_sync,input_data,f"{modelname}_timedsync_cuda_e2e",reps,layers,profile=False)
+        
+
+        #Tritonnoprof
+        run_profiled(pureComp,input_data,f"{modelname}_pure_triton_e2e",reps,layers,profile=False)
+        run_profiled(timedComp,input_data,f"{modelname}_timed_triton_e2e",reps,layers,profile=False)
+        run_profiled(syncComp,input_data,f"{modelname}_sync_triton_e2e",reps,layers,profile=False)
+        run_profiled(timed_syncComp,input_data,f"{modelname}_timedsync_triton_e2e",reps,layers,profile=False)
 
 def run_all(verbose,device):
     #Vision
