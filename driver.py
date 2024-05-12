@@ -78,8 +78,6 @@ def raw_run_all(reps=5, layers=1):
         # timed_sync_cust = model(timed=True,sync=True,cust=True)
 
         modelname = pure.__class__.__name__.lower()
-        if 'alex' not in modelname:
-            continue
         #print(modelname,flush=True)
 
         #CUDA 
@@ -169,7 +167,8 @@ def run_custom_resnet():
     print(f"custom_time    {custom_time:.4}")
     print(f"triton_time    {triton_time:.4}")
 
-#TODO graph
+#TODO check out https://github.com/pytorch/pytorch/blob/main/torch/_inductor/compile_fx.py#L1224
+# maybe there is a simple test that can be run here with 'example_inputs'
 def main():
     #run_one('res')
     #raw_run_all()

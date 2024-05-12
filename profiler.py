@@ -244,45 +244,45 @@ def pull_data(file):
     arrsum = None
     cuda_total_sum = None
     cuda_self_sum = None
+    cpu_self_sum = None
     if arr:
         arrsum = np.sum(arr)/1e3
     if df is not None:
         cuda_total_sum = df['CUDA_total_us'].sum()
         cuda_self_sum = df['Self_CUDA_us'].sum()
+        cpu_self_sum = df['Self_CPU_us'].sum()
     #print(cuda_total_sum,cuda_self_sum,arrsum,ete)
-    return cuda_total_sum,cuda_self_sum,arrsum,ete
+    return cuda_total_sum,cuda_self_sum,cpu_self_sum,arrsum,ete
 
 def profile_autogradtraces(verbose=False):
     files = [f for f in sorted(os.listdir(DIR+"cache/autogradtraces")) if os.path.isfile(os.path.join(DIR+"cache/autogradtraces", f))]
+
     for file_lst in chunker(files,16):
         modelname = file_lst[0].split('_')[0]
-        if 'alex' not in modelname:
-            continue
-        
-        pure_cuda = pull_data(file_lst[0])
-        pure_triton = pull_data(file_lst[2])
-        sync_cuda = pull_data(file_lst[4])
-        sync_triton = pull_data(file_lst[6])
-        timed_cuda = pull_data(file_lst[8])
-        timed_triton = pull_data(file_lst[10])
-        timedsync_cuda = pull_data(file_lst[12])
-        timedsync_triton = pull_data(file_lst[14])
 
-        print('\n')
+        pure_cuda_ete = pull_data(file_lst[0])[-1]
+        pure_triton_ete = pull_data(file_lst[2])[-1]
+        sync_cuda_ete = pull_data(file_lst[4])[-1]
+        sync_triton_ete = pull_data(file_lst[6])[-1]
+        timed_cuda_ete = pull_data(file_lst[8])[-1]
+        timed_triton_ete = pull_data(file_lst[10])[-1]
+        timedsync_cuda_ete = pull_data(file_lst[12])[-1]
+        timedsync_triton_ete = pull_data(file_lst[14])[-1]
 
-        pure_cuda_ete = pull_data(file_lst[1])
-        pure_triton_ete = pull_data(file_lst[3])
-        sync_cuda_ete = pull_data(file_lst[5])
-        sync_triton_ete = pull_data(file_lst[7])
-        timed_cuda_ete = pull_data(file_lst[9])
-        timed_triton_ete = pull_data(file_lst[11])
-        timedsync_cuda_ete = pull_data(file_lst[13])
-        timedsync_triton_ete = pull_data(file_lst[15])
+
+        pure_cuda = pull_data(file_lst[1])
+        pure_triton = pull_data(file_lst[3])
+        sync_cuda = pull_data(file_lst[5])
+        sync_triton = pull_data(file_lst[7])
+        timed_cuda = pull_data(file_lst[9])
+        timed_triton = pull_data(file_lst[11])
+        timedsync_cuda = pull_data(file_lst[13])
+        timedsync_triton = pull_data(file_lst[15])
 
         plot_benchmark_results(
             [pure_cuda,pure_triton,sync_cuda,sync_triton,timed_cuda,timed_triton,timedsync_cuda,timedsync_triton],
+            [pure_cuda_ete,pure_triton_ete,sync_cuda_ete,sync_triton_ete,timed_cuda_ete,timed_triton_ete,timedsync_cuda_ete,timedsync_triton_ete],
             modelname
         )
-        exit()
             
     

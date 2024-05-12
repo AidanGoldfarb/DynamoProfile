@@ -3,34 +3,57 @@ import matplotlib.pyplot as plt
 from util import *
 import numpy as np
 
-def plot_benchmark_results(data,modelname):
-    # Labels for the bars and groups
-    bar_labels = ['CUDA_total', 'CUDA_Self', 'Arr sum', 'End to end']
+def plot_benchmark_results(data, unprof_data, modelname):
+    #print(modelname)
+    # Updated labels to include the new bar "Unprof"
+    bar_labels = ['CUDA_total', 'CUDA_Self', 'CPU_Self', 'Arr sum', 'e2e', 'unprof_e2e']
     group_labels = ['pure_cuda', 'pure_triton', 'sync_cuda', 'sync_triton', 'timed_cuda', 'timed_triton', 'timed_sync_cuda', 'timedsync_triton']
     
-    # Colors for each bar
-    colors = ['red', 'green', 'blue', 'yellow']
+    # Updated colors for each bar
+    colors = ['lightcoral', 'forestgreen', 'orange', 'steelblue', 'lightseagreen', 'purple']
     
     # Number of groups
     n_groups = len(data)
     
     # Setting the bar width and the positions of the bars and groups
-    bar_width = 0.25
-    group_width = n_groups * bar_width * 1.2  # spacing between groups
+    bar_width = 0.2
+    group_width = len(bar_labels) * bar_width + 0.1  # spacing between groups
     
     # Create figure and axes
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(14, 8))
     
     # Generating the bars
-    for i, (group_data) in enumerate(data):
-        # Each tuple in data corresponds to one group
-        for j, value in enumerate(group_data):
-            if value is not None:  # Only plot if the value is not None
-                # Plot each bar in the group
-                ax.bar(i * group_width + j * bar_width, value, color=colors[j], width=bar_width)
+    for i, group_data in enumerate(data):
+        base_position = i * group_width
+        
+        # Extract the values
+        cuda_total, cuda_self, cpu_self, arr_sum, end_to_end = group_data
+        # print(f'\tcuda total:           {cuda_total:.4}')
+        # print(f'\tcuda self + cpu self: {cuda_self+cpu_self:.4}')
+        # print('')
+        
+        # Plot each bar in the group
+        if cuda_total is not None:
+            ax.bar(base_position, cuda_total, color=colors[0], width=bar_width)
+        
+        if cuda_self is not None:
+            ax.bar(base_position + bar_width, cuda_self, color=colors[1], width=bar_width)
+            
+            # Stack the CPU_Self bar on top of CUDA_Self
+            if cpu_self is not None:
+                ax.bar(base_position + bar_width, cpu_self, bottom=cuda_self, color=colors[2], width=bar_width)
+        
+        if arr_sum is not None:
+            ax.bar(base_position + 2 * bar_width, arr_sum, color=colors[3], width=bar_width)
+        
+        if end_to_end is not None:
+            ax.bar(base_position + 3 * bar_width, end_to_end, color=colors[4], width=bar_width)
+        
+        if unprof_data[i] is not None:
+            ax.bar(base_position + 4 * bar_width, unprof_data[i], color=colors[5], width=bar_width)
 
     # Setting the x-axis labels and title
-    ax.set_xticks([i * group_width + bar_width for i in range(n_groups)])
+    ax.set_xticks([i * group_width + 2 * bar_width for i in range(n_groups)])
     ax.set_xticklabels(group_labels, rotation=45, ha='right')
     ax.set_title(modelname)
     plt.ylabel("runtime [us]")
@@ -44,7 +67,7 @@ def plot_benchmark_results(data,modelname):
     
     # Show the plot
     plt.tight_layout()
-    plt.savefig('figs/full/'+modelname)
+    plt.savefig('figs/full/' + modelname)
 
 def plot_arrsum_vs_total(modelname, arr_sums, tots):
     # Ensure the inputs are correctly sized
