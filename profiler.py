@@ -260,15 +260,14 @@ def profile_autogradtraces(verbose=False):
     for file_lst in chunker(files,16):
         modelname = file_lst[0].split('_')[0]
 
-        pure_cuda_ete = pull_data(file_lst[0])[-1]
-        pure_triton_ete = pull_data(file_lst[2])[-1]
-        sync_cuda_ete = pull_data(file_lst[4])[-1]
-        sync_triton_ete = pull_data(file_lst[6])[-1]
-        timed_cuda_ete = pull_data(file_lst[8])[-1]
-        timed_triton_ete = pull_data(file_lst[10])[-1]
-        timedsync_cuda_ete = pull_data(file_lst[12])[-1]
-        timedsync_triton_ete = pull_data(file_lst[14])[-1]
-
+        pure_cuda_ete = pull_data(file_lst[0])[-2:]
+        pure_triton_ete = pull_data(file_lst[2])[-2:]
+        sync_cuda_ete = pull_data(file_lst[4])[-2:]
+        sync_triton_ete = pull_data(file_lst[6])[-2:]
+        timed_cuda_ete = pull_data(file_lst[8])[-2:]
+        timed_triton_ete = pull_data(file_lst[10])[-2:]
+        timedsync_cuda_ete = pull_data(file_lst[12])[-2:]
+        timedsync_triton_ete = pull_data(file_lst[14])[-2:]
 
         pure_cuda = pull_data(file_lst[1])
         pure_triton = pull_data(file_lst[3])
@@ -284,5 +283,6 @@ def profile_autogradtraces(verbose=False):
             [pure_cuda_ete,pure_triton_ete,sync_cuda_ete,sync_triton_ete,timed_cuda_ete,timed_triton_ete,timedsync_cuda_ete,timedsync_triton_ete],
             modelname
         )
+        exit()
             
     

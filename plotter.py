@@ -3,20 +3,21 @@ import matplotlib.pyplot as plt
 from util import *
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 def plot_benchmark_results(data, unprof_data, modelname):
-    #print(modelname)
-    # Updated labels to include the new bar "Unprof"
-    bar_labels = ['CUDA_total', 'CUDA_Self', 'CPU_Self', 'Arr sum', 'e2e', 'unprof_e2e']
+    # Updated labels to include the new bars for unprof_data tuple
+    bar_labels = ['CUDA_total', 'CUDA_Self', 'CPU_Self', 'Arr sum', 'e2e', 'Arrsum_Unprof', 'Et2_Unprof']
     group_labels = ['pure_cuda', 'pure_triton', 'sync_cuda', 'sync_triton', 'timed_cuda', 'timed_triton', 'timed_sync_cuda', 'timedsync_triton']
     
     # Updated colors for each bar
-    colors = ['lightcoral', 'forestgreen', 'orange', 'steelblue', 'lightseagreen', 'purple']
+    colors = ['lightcoral', 'forestgreen', 'orange', 'steelblue', 'lightseagreen', 'purple', 'darkblue']
     
     # Number of groups
     n_groups = len(data)
     
     # Setting the bar width and the positions of the bars and groups
-    bar_width = 0.2
+    bar_width = 0.15
     group_width = len(bar_labels) * bar_width + 0.1  # spacing between groups
     
     # Create figure and axes
@@ -28,9 +29,6 @@ def plot_benchmark_results(data, unprof_data, modelname):
         
         # Extract the values
         cuda_total, cuda_self, cpu_self, arr_sum, end_to_end = group_data
-        # print(f'\tcuda total:           {cuda_total:.4}')
-        # print(f'\tcuda self + cpu self: {cuda_self+cpu_self:.4}')
-        # print('')
         
         # Plot each bar in the group
         if cuda_total is not None:
@@ -50,7 +48,11 @@ def plot_benchmark_results(data, unprof_data, modelname):
             ax.bar(base_position + 3 * bar_width, end_to_end, color=colors[4], width=bar_width)
         
         if unprof_data[i] is not None:
-            ax.bar(base_position + 4 * bar_width, unprof_data[i], color=colors[5], width=bar_width)
+            arrsum_unprof, et2_unprof = unprof_data[i]
+            if arrsum_unprof is not None:
+                ax.bar(base_position + 4 * bar_width, arrsum_unprof, color=colors[5], width=bar_width)
+            if et2_unprof is not None:
+                ax.bar(base_position + 5 * bar_width, et2_unprof, color=colors[6], width=bar_width)
 
     # Setting the x-axis labels and title
     ax.set_xticks([i * group_width + 2 * bar_width for i in range(n_groups)])

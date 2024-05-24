@@ -171,8 +171,8 @@ def run_custom_resnet():
 # maybe there is a simple test that can be run here with 'example_inputs'
 def main():
     #run_one('res')
-    #raw_run_all()
-    profile_autogradtraces()
+    raw_run_all()
+    #profile_autogradtraces()
     #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
