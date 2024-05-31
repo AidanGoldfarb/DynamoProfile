@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from io import StringIO
 import numbers
+import copy
 from tqdm import tqdm
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'

@@ -126,13 +126,15 @@ def run_all(verbose,device):
         # for model_config in prepare_model(model,hooks=True,device=device,verbose=verbose):
         #     run(model_config,profile=True,verbose=verbose)
 
-def profile_all_hooktraces():
-    profile_hooktraces(RESNET_MODELS_FILENAMES)
-    profile_hooktraces(GOOGLENET_MODELS_FILENAMES)
-    profile_hooktraces(DENSENET_MODELS_FILENAMES)
-    profile_hooktraces(SQUEEZENET_MODELS_FILENAMES)
-    profile_hooktraces(ALEXNET_MODELS_FILENAMES)
-    profile_hooktraces(MOBILENET_MODELS_FILENAMES)
+def find_config_dyn():
+    for model in VISION_MODELS:
+        model = model(timed=False,sync=False,cust=False).to('cuda').eval()
+        modelname = model.__class__.__name__.lower()
+        if 'alex' not in modelname:
+            continue
+        res = find_bestconfig_dyn(model)
+        print(res)
+   
 
 def profile_all_autgradtraces(verbose=False):
     find_slow_layers()
@@ -170,9 +172,9 @@ def run_custom_resnet():
 #TODO check out https://github.com/pytorch/pytorch/blob/main/torch/_inductor/compile_fx.py#L1224
 # maybe there is a simple test that can be run here with 'example_inputs'
 def main():
-    #run_one('res')
-    raw_run_all()
+    #raw_run_all()
     #profile_autogradtraces()
+    find_config_dyn()
     #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
