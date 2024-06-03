@@ -128,11 +128,10 @@ def run_all(verbose,device):
 
 def find_config_dyn():
     for model in VISION_MODELS:
-        model = model(timed=False,sync=False,cust=False).to('cuda').eval()
-        modelname = model.__class__.__name__.lower()
-        if 'alex' not in modelname:
+        if 'alex' not in str(model):
             continue
-        res = find_bestconfig_dyn(model)
+        num_layers = len(model(False,False,False,[]).features)
+        res = find_bestconfig_dyn(model,num_layers)
         print(res)
    
 
