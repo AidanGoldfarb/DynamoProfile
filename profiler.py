@@ -285,57 +285,55 @@ def profile_autogradtraces(verbose=False):
         )
             
 def find_bestconfig_dyn(model,numlayers):
-    def measure_time(model, input_data, compile_layers=None, stop_at_layer=None):
-        # Create a new nn.Sequential container with compiled layers if needed
-        model = model(timed=False,sync=False,cust=False,comp_arr=compile_layers).to('cuda').eval()
+    def measure_time(comp_layers=None, stop_at_layer=None):
+        modelmade = model(timed=False,sync=False,cust=False,comp_arr=comp_layers).to('cuda').eval()
         times = []
+        input_data = torch.rand(1, 3, 224, 224, device='cuda')
         for _ in range(10):
             start_time = time.perf_counter_ns()
-            output = model(input_data, stop_at_layer=stop_at_layer)
+            output = modelmade(input_data, stop_at_layer=stop_at_layer)
             end_time = time.perf_counter_ns()
             times.append(end_time - start_time)
 
         return np.median(times)
 
-    input_data = torch.rand(1, 3, 224, 224, device='cuda')
-    dp = [[float('inf'), float('inf')] for _ in range(numlayers + 1)]
-    path = [[[], []] for _ in range(numlayers + 1)]
+    #dp = [[float('inf'), float('inf')] for _ in range(numlayers + 1)]
+    #path = [[[], []] for _ in range(numlayers + 1)]
+    path = []
 
-    dp[0][0] = 0
-    dp[0][1] = 0
+    # dp[0][0] = measure_time(comp_layers=[],stop_at_layer=1)  #fst layer not comp
+    # dp[0][1] = measure_time(comp_layers=[0],stop_at_layer=1) #fst layer comp
+    # if dp[0][0] > dp[0][1]: #comp better
+    #     path.append(0) #compile 0 layer
 
-    for i in range(1, numlayers + 1):
-        # Not compiled
-        time_not_compiled = measure_time(model, input_data, compile_layers=path[i-1][0], stop_at_layer=i)
-        #print(f"Layer {i} not compiled: Time = {time_not_compiled}")
-        if dp[i-1][0] + time_not_compiled < dp[i][0]:
-            dp[i][0] = dp[i-1][0] + time_not_compiled
-            path[i][0] = path[i-1][0]
+    for i in range(1, numlayers):
+        a = measure_time(comp_layers=path+[i-1]+[i], stop_at_layer=i+1) #compile cur, compile prev layer
+        b = measure_time(comp_layers=path+[i], stop_at_layer=i+1)       #compile cur, dont compile prev layer
+        c = measure_time(comp_layers=path+[i-1], stop_at_layer=i+1)     #dont compile cur, compile prev layer
+        d = measure_time(comp_layers=path, stop_at_layer=i+1)           #dont compile cur, dont compile prev layer
 
-        time_not_compiled = measure_time(model, input_data, compile_layers=path[i-1][1], stop_at_layer=i)
-        #print(f"Layer {i} not compiled (from compiled): Time = {time_not_compiled}")
-        if dp[i-1][1] + time_not_compiled < dp[i][0]:
-            dp[i][0] = dp[i-1][1] + time_not_compiled
-            path[i][0] = path[i-1][1]
+        if a < b and a < c and a < d: #a
+            print('a')
+            path.append(i-1)
+            path.append(i)
+        elif b < a and b < c and b < d: #b
+            print('b')
+            path.append(i)
+        elif c < a and c < b and c < d: #c
+            print('c')
+            path.append(i-1)
+        else: #d
+            print('d')
+            pass
+    print(path)
+    exit()
 
-        # Compiled
-        time_compiled = measure_time(model, input_data, compile_layers=path[i-1][0] + [i-1], stop_at_layer=i)
-        #print(f"Layer {i} compiled: Time = {time_compiled}")
-        if dp[i-1][0] + time_compiled < dp[i][1]:
-            dp[i][1] = dp[i-1][0] + time_compiled
-            path[i][1] = path[i-1][0] + [i-1]
-
-        time_compiled = measure_time(model, input_data, compile_layers=path[i-1][1] + [i-1], stop_at_layer=i)
-        #print(f"Layer {i} compiled (from compiled): Time = {time_compiled}")
-        if dp[i-1][1] + time_compiled < dp[i][1]:
-            dp[i][1] = dp[i-1][1] + time_compiled
-            path[i][1] = path[i-1][1] + [i-1]
     
-    optimal_path = []
-    current_state = 0 if dp[numlayers][0] < dp[numlayers][1] else 1
-    for i in range(numlayers, 0, -1):
-        optimal_path.append(current_state)
-        current_state = 0 if path[i][current_state] == path[i-1][0] else 1
+    # optimal_path = []
+    # current_state = 0 if dp[numlayers][0] < dp[numlayers][1] else 1
+    # for i in range(numlayers, 0, -1):
+    #     optimal_path.append(current_state)
+    #     current_state = 0 if path[i][current_state] == path[i-1][0] else 1
 
-    print(optimal_path)
-    return optimal_path.reverse()
+    # print(optimal_path)
+    # return optimal_path.reverse()

@@ -128,7 +128,7 @@ def run_all(verbose,device):
 
 def find_config_dyn():
     for model in VISION_MODELS:
-        if 'alex' not in str(model):
+        if 'google' not in str(model):
             continue
         num_layers = len(model(False,False,False,[]).features)
         res = find_bestconfig_dyn(model,num_layers)
