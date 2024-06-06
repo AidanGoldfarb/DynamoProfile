@@ -297,35 +297,44 @@ def find_bestconfig_dyn(model,numlayers):
 
         return np.median(times)
 
-    #dp = [[float('inf'), float('inf')] for _ in range(numlayers + 1)]
-    #path = [[[], []] for _ in range(numlayers + 1)]
+    dp = []
     path = []
 
-    # dp[0][0] = measure_time(comp_layers=[],stop_at_layer=1)  #fst layer not comp
-    # dp[0][1] = measure_time(comp_layers=[0],stop_at_layer=1) #fst layer comp
-    # if dp[0][0] > dp[0][1]: #comp better
-    #     path.append(0) #compile 0 layer
+    #fist case
+    interp = measure_time([],1)
+    comp = measure_time([0],1)
+    dp.append([[],[0]]) # append(fastest path to each node)
 
-    for i in range(1, numlayers):
-        a = measure_time(comp_layers=path+[i-1]+[i], stop_at_layer=i+1) #compile cur, compile prev layer
-        b = measure_time(comp_layers=path+[i], stop_at_layer=i+1)       #compile cur, dont compile prev layer
-        c = measure_time(comp_layers=path+[i-1], stop_at_layer=i+1)     #dont compile cur, compile prev layer
-        d = measure_time(comp_layers=path, stop_at_layer=i+1)           #dont compile cur, dont compile prev layer
+    #A = interp, B = compile
+    for i in tqdm(range(1, numlayers)):
+        aa = measure_time( dp[i-1][0]      , i+1 )
+        ab = measure_time( dp[i-1][0] + [i], i+1)
+        ba = measure_time( dp[i-1][1]      , i+1)
+        bb = measure_time( dp[i-1][1] + [i], i+1)
 
-        if a < b and a < c and a < d: #a
-            print('a')
-            path.append(i-1)
-            path.append(i)
-        elif b < a and b < c and b < d: #b
-            print('b')
-            path.append(i)
-        elif c < a and c < b and c < d: #c
-            print('c')
-            path.append(i-1)
-        else: #d
-            print('d')
-            pass
-    print(path)
+        best_a = None
+        best_b = None
+
+        if aa < ba and ab < bb:
+            #fastest path to A is from A, fastest bath to B is from A
+            dp.append([dp[i-1][0] + [],dp[i-1][1] + []])
+            best_a = aa
+        elif aa < ba and bb < ab:
+            #fastest path to A is from A, fastest bath to B is from B
+            dp.append([dp[i-1][0] + [],dp[i-1][1] + []])
+        elif ba < aa and ab < bb:
+            #fastest path to A is from B, fastest bath to B is from A
+            dp.append([dp[i-1][0] + [i-1],dp[i-1][1] + []])
+        elif ba < aa and bb < ab:
+            #fastest path to A is from B, fastest bath to B is from B
+            dp.append([dp[i-1][0] + [i-1],dp[i-1][1] + [i-1]])
+        else:
+            raise Exception #impossible
+            
+
+    for e in dp:
+        print(e)
+    #print(path)
     exit()
 
     
