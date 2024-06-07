@@ -128,8 +128,6 @@ def run_all(verbose,device):
 
 def find_config_dyn():
     for model in VISION_MODELS:
-        if 'res' not in str(model):
-            continue
         num_layers = len(model(False,False,False,[]).features)
         res = find_bestconfig_dyn(model,num_layers)
         print(res)
@@ -173,7 +171,8 @@ def run_custom_resnet():
 def main():
     #raw_run_all()
     #profile_autogradtraces()
-    find_config_dyn()
+    #find_config_dyn()
+    run_configs()
     #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()

@@ -303,46 +303,72 @@ def find_bestconfig_dyn(model,numlayers):
     #fist case
     interp = measure_time([],1)
     comp = measure_time([0],1)
-    dp.append([[],[0]]) # append(fastest path to each node)
+    dp.append([interp, comp]) # append(fastest path to each node)
+    path.append([[], [0]])
 
     #A = interp, B = compile
     for i in tqdm(range(1, numlayers)):
-        aa = measure_time( dp[i-1][0]      , i+1 )
-        ab = measure_time( dp[i-1][0] + [i], i+1)
-        ba = measure_time( dp[i-1][1]      , i+1)
-        bb = measure_time( dp[i-1][1] + [i], i+1)
+        # Measure time for the four possible configurations
+        aa = measure_time(path[i-1][0], stop_at_layer=i+1)  # prev: no compile, curr: no compile
+        ab = measure_time(path[i-1][0] + [i], stop_at_layer=i+1)  # prev: no compile, curr: compile
+        ba = measure_time(path[i-1][1], stop_at_layer=i+1)  # prev: compile, curr: no compile
+        bb = measure_time(path[i-1][1] + [i], stop_at_layer=i+1)  # prev: compile, curr: compile
 
-        best_a = None
-        best_b = None
-
-        if aa < ba and ab < bb:
-            #fastest path to A is from A, fastest bath to B is from A
-            dp.append([dp[i-1][0] + [],dp[i-1][1] + []])
-            best_a = aa
-        elif aa < ba and bb < ab:
-            #fastest path to A is from A, fastest bath to B is from B
-            dp.append([dp[i-1][0] + [],dp[i-1][1] + []])
-        elif ba < aa and ab < bb:
-            #fastest path to A is from B, fastest bath to B is from A
-            dp.append([dp[i-1][0] + [i-1],dp[i-1][1] + []])
-        elif ba < aa and bb < ab:
-            #fastest path to A is from B, fastest bath to B is from B
-            dp.append([dp[i-1][0] + [i-1],dp[i-1][1] + [i-1]])
+        # Determine the best paths
+        if aa <= ba:
+            best_path_to_A = path[i-1][0]  # best path to not compile current layer
+            best_time_A = aa
         else:
-            raise Exception #impossible
-            
+            best_path_to_A = path[i-1][1]  # best path to not compile current layer
+            best_time_A = ba
 
-    for e in dp:
-        print(e)
-    #print(path)
-    exit()
+        if ab <= bb:
+            best_path_to_B = path[i-1][0] + [i]  # best path to compile current layer
+            best_time_B = ab
+        else:
+            best_path_to_B = path[i-1][1] + [i]  # best path to compile current layer
+            best_time_B = bb
 
-    
-    # optimal_path = []
-    # current_state = 0 if dp[numlayers][0] < dp[numlayers][1] else 1
-    # for i in range(numlayers, 0, -1):
-    #     optimal_path.append(current_state)
-    #     current_state = 0 if path[i][current_state] == path[i-1][0] else 1
+        # Append the best paths and times
+        dp.append([best_time_A, best_time_B])
+        path.append([best_path_to_A, best_path_to_B])
 
-    # print(optimal_path)
-    # return optimal_path.reverse()
+    if dp[numlayers-1][0] <= dp[numlayers-1][1]:
+        optimal_path = path[numlayers-1][0]
+    else:
+        optimal_path = path[numlayers-1][1]
+    return optimal_path
+
+def run_configs():
+    input_data = torch.rand(1, 3, 224, 224, device='cuda')
+    for model,config in zip(VISION_MODELS,VISION_CONFIGS):
+        default = model(timed=False,sync=False,cust=False,comp_arr=[]).to('cuda').eval()
+        comp = torch.compile(model(timed=False,sync=False,cust=False,comp_arr=[])).to('cuda').eval()
+        cust = model(timed=False,sync=False,cust=False,comp_arr=[0]).to('cuda').eval()
+
+        defaults = []
+        comps = []
+        custs = []
+
+        for _ in range(10): 
+            st = time.perf_counter_ns()
+            default(input_data)
+            et = time.perf_counter_ns()
+            defaults.append(et-st)
+        default_rt = np.median(defaults)
+
+        for _ in range(10): 
+            st = time.perf_counter_ns()
+            comp(input_data)
+            et = time.perf_counter_ns()
+            comps.append(et-st)
+        comp_rt = np.median(comps)
+
+        for _ in range(10): 
+            st = time.perf_counter_ns()
+            cust(input_data)
+            et = time.perf_counter_ns()
+            custs.append(et-st)
+        cust_rt = np.median(custs)
+
+        print(default_rt,comp_rt,cust_rt)
