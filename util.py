@@ -28,6 +28,7 @@ CUSTOM_VISION_MODELS = [models.myresnet50,models.mygooglenet,models.mydensenet12
 SYNC_VISION_MODELS = [models.sresnet50,models.sgooglenet,models.sdensenet121,models.ssqueezenet1_1,models.salexnet,models.smobilenet_v2]
 
 VISION_CONFIGS = [
+    [3, 4, 5, 6, 7, 8, 10],
     [4, 5, 6, 7],
     [5, 6, 7, 8, 9, 10, 12, 14, 15],
     [0, 4, 5, 10],

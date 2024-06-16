@@ -1,6 +1,6 @@
 from util import *
 from plotter import *
-from itertools import islice
+from itertools import islice,product
 
 
 
@@ -285,10 +285,13 @@ def profile_autogradtraces(verbose=False):
         )
             
 def find_bestconfig_dyn(model,numlayers):
+    layer_times_interp = []
+    layer_times_comp = []
+
     def measure_time(comp_layers=None, stop_at_layer=None):
-        modelmade = model(timed=False,sync=False,cust=False,comp_arr=comp_layers).to('cuda').eval()
+        modelmade = model(timed=False,sync=False,cust=False,comp_arr=comp_layers).eval()#.to('cuda').eval()
         times = []
-        input_data = torch.rand(1, 3, 224, 224, device='cuda')
+        input_data = torch.rand(1, 3, 224, 224)#, device='cuda')
         for _ in range(10):
             start_time = time.perf_counter_ns()
             output = modelmade(input_data, stop_at_layer=stop_at_layer)
@@ -308,25 +311,23 @@ def find_bestconfig_dyn(model,numlayers):
 
     #A = interp, B = compile
     for i in tqdm(range(1, numlayers)):
-        # Measure time for the four possible configurations
         aa = measure_time(path[i-1][0], stop_at_layer=i+1)  # prev: no compile, curr: no compile
         ab = measure_time(path[i-1][0] + [i], stop_at_layer=i+1)  # prev: no compile, curr: compile
         ba = measure_time(path[i-1][1], stop_at_layer=i+1)  # prev: compile, curr: no compile
         bb = measure_time(path[i-1][1] + [i], stop_at_layer=i+1)  # prev: compile, curr: compile
 
-        # Determine the best paths
         if aa <= ba:
-            best_path_to_A = path[i-1][0]  # best path to not compile current layer
+            best_path_to_A = path[i-1][0] 
             best_time_A = aa
         else:
-            best_path_to_A = path[i-1][1]  # best path to not compile current layer
+            best_path_to_A = path[i-1][1]  
             best_time_A = ba
 
         if ab <= bb:
-            best_path_to_B = path[i-1][0] + [i]  # best path to compile current layer
+            best_path_to_B = path[i-1][0] + [i]  
             best_time_B = ab
         else:
-            best_path_to_B = path[i-1][1] + [i]  # best path to compile current layer
+            best_path_to_B = path[i-1][1] + [i]  
             best_time_B = bb
 
         # Append the best paths and times
@@ -339,12 +340,104 @@ def find_bestconfig_dyn(model,numlayers):
         optimal_path = path[numlayers-1][1]
     return optimal_path
 
-def run_configs():
+def find_bestconfig_exh(model,numlayers):
+    def measure_time(comp_layers=None, stop_at_layer=None):
+        modelmade = model(timed=False,sync=False,cust=False,comp_arr=comp_layers).to('cuda').eval()
+        times = []
+        input_data = torch.rand(1, 3, 224, 224, device='cuda')
+        for _ in range(10):
+            start_time = time.perf_counter_ns()
+            output = modelmade(input_data, stop_at_layer=stop_at_layer)
+            end_time = time.perf_counter_ns()
+            times.append(end_time - start_time)
+
+        return np.median(times)
+
+    input_data = torch.rand(1, 3, 224, 224, device='cuda')
+    best_time = float('inf')
+    best_config = None
+
+    # Generate all possible configurations
+    for config in product([0, 1], repeat=numlayers):
+        compile_layers = [i for i, bit in enumerate(config) if bit == 1]
+        execution_time = measure_time(compile_layers)
+        print(f"Config: {config}, Time: {execution_time}", flush=True)
+
+        if execution_time < best_time:
+            best_time = execution_time
+            best_config = config
+
+    return best_config
+
+def time_layers_bysub():
     input_data = torch.rand(1, 3, 224, 224, device='cuda')
     for model,config in zip(VISION_MODELS,VISION_CONFIGS):
+        num_layers = len(model(False,False,False,[]).features)
+
         default = model(timed=False,sync=False,cust=False,comp_arr=[]).to('cuda').eval()
         comp = torch.compile(model(timed=False,sync=False,cust=False,comp_arr=[])).to('cuda').eval()
-        cust = model(timed=False,sync=False,cust=False,comp_arr=[0]).to('cuda').eval()
+        cust = model(timed=False,sync=False,cust=False,comp_arr=config).to('cuda').eval()
+
+        defaults = []
+        comps = []
+        custs = []
+
+        defaults_out = []
+        comps_out = []
+        custs_out = []
+
+        for _ in range(10):
+            defaults = []
+            for i in range(num_layers): 
+                st = time.perf_counter_ns()
+                default(input_data,stop_at_layer=i)
+                et = time.perf_counter_ns()
+                tm = et-st
+                if i > 0:
+                    tm = tm-np.sum(defaults[0:i])
+                defaults.append(tm)
+            defaults_out.append(defaults)
+        for _ in range(10):
+            comps = []
+            for i in range(num_layers): 
+                st = time.perf_counter_ns()
+                comp(input_data,stop_at_layer=i)
+                et = time.perf_counter_ns()
+                tm = et-st
+                if i > 0:
+                    tm = tm-np.sum(comps[0:i])
+                comps.append(tm)
+            comps_out.append(comps)
+        for _ in range(10):
+            custs = []
+            for i in range(num_layers): 
+                st = time.perf_counter_ns()
+                cust(input_data,stop_at_layer=i)
+                et = time.perf_counter_ns()
+                tm = et-st
+                if i > 0:
+                    tm = tm-np.sum(custs[0:i])
+                custs.append(tm)
+            custs_out.append(custs)
+
+        defaults_out = np.array(defaults_out)
+        comps_out = np.array(comps_out)
+        custs_out = np.array(custs_out)
+
+        defs = np.median(defaults_out,axis=0)
+        comps = np.median(comps_out,axis=0)
+        custs = np.median(custs_out,axis=0)
+
+        for d,com,cus in zip(defs,comps,custs):
+            print(d,com,cus)
+        exit()
+
+def run_configs():
+    input_data = torch.rand(1, 3, 224, 224)#, device='cuda')
+    for model,config in zip(VISION_MODELS,VISION_CONFIGS):
+        default = model(timed=False,sync=False,cust=False,comp_arr=[]).eval()#.to('cuda').eval()
+        comp = torch.compile(model(timed=False,sync=False,cust=False,comp_arr=[])).eval()#.to('cuda').eval()
+        cust = model(timed=False,sync=False,cust=False,comp_arr=config).eval()#.to('cuda').eval()
 
         defaults = []
         comps = []
@@ -372,3 +465,4 @@ def run_configs():
         cust_rt = np.median(custs)
 
         print(default_rt,comp_rt,cust_rt)
+        exit()

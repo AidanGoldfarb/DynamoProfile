@@ -130,7 +130,8 @@ def find_config_dyn():
     for model in VISION_MODELS:
         num_layers = len(model(False,False,False,[]).features)
         res = find_bestconfig_dyn(model,num_layers)
-        print(res)
+        print("Best:",res, flush=True)
+        exit()
    
 
 def profile_all_autgradtraces(verbose=False):
@@ -173,6 +174,7 @@ def main():
     #profile_autogradtraces()
     #find_config_dyn()
     run_configs()
+    #time_layers_bysub()
     #compare_runtimes()
     #run_all(device='gpu',verbose=True)
     #profile_all_hooktraces()
