@@ -278,11 +278,20 @@ def profile_autogradtraces(verbose=False):
         timedsync_cuda = pull_data(file_lst[13])
         timedsync_triton = pull_data(file_lst[15])
 
-        plot_benchmark_results(
-            [pure_cuda,pure_triton,sync_cuda,sync_triton,timed_cuda,timed_triton,timedsync_cuda,timedsync_triton],
-            [pure_cuda_ete,pure_triton_ete,sync_cuda_ete,sync_triton_ete,timed_cuda_ete,timed_triton_ete,timedsync_cuda_ete,timedsync_triton_ete],
-            modelname
-        )
+        #PURE e2e
+        plt.bar("CUDA", pure_cuda_ete[1])
+        plt.bar("Triton", pure_triton_ete[1])
+        plt.ylabel("Runtime [ns]")
+        plt.title(modelname)
+        plt.savefig(f'figs/{modelname}.png')
+        plt.clf()
+        ##
+
+        # plot_benchmark_results(
+        #     [pure_cuda,pure_triton,sync_cuda,sync_triton,timed_cuda,timed_triton,timedsync_cuda,timedsync_triton],
+        #     [pure_cuda_ete,pure_triton_ete,sync_cuda_ete,sync_triton_ete,timed_cuda_ete,timed_triton_ete,timedsync_cuda_ete,timedsync_triton_ete],
+        #     modelname
+        # )
             
 def find_bestconfig_dyn(model,numlayers):
     layer_times_interp = []
@@ -386,18 +395,20 @@ def time_layers_bysub():
         comps_out = []
         custs_out = []
 
-        for _ in range(10):
+        for _ in range(100):
             defaults = []
             for i in range(num_layers): 
+                default(input_data,stop_at_layer=i)
                 st = time.perf_counter_ns()
                 default(input_data,stop_at_layer=i)
                 et = time.perf_counter_ns()
                 tm = et-st
                 if i > 0:
                     tm = tm-np.sum(defaults[0:i])
+                
                 defaults.append(tm)
             defaults_out.append(defaults)
-        for _ in range(10):
+        for _ in range(100):
             comps = []
             for i in range(num_layers): 
                 st = time.perf_counter_ns()
@@ -408,7 +419,7 @@ def time_layers_bysub():
                     tm = tm-np.sum(comps[0:i])
                 comps.append(tm)
             comps_out.append(comps)
-        for _ in range(10):
+        for _ in range(100):
             custs = []
             for i in range(num_layers): 
                 st = time.perf_counter_ns()
@@ -430,14 +441,14 @@ def time_layers_bysub():
 
         for d,com,cus in zip(defs,comps,custs):
             print(d,com,cus)
-        exit()
+        print()
 
 def run_configs():
-    input_data = torch.rand(1, 3, 224, 224)#, device='cuda')
+    input_data = torch.rand(1, 3, 224, 224, device='cuda')
     for model,config in zip(VISION_MODELS,VISION_CONFIGS):
-        default = model(timed=False,sync=False,cust=False,comp_arr=[]).eval()#.to('cuda').eval()
-        comp = torch.compile(model(timed=False,sync=False,cust=False,comp_arr=[])).eval()#.to('cuda').eval()
-        cust = model(timed=False,sync=False,cust=False,comp_arr=config).eval()#.to('cuda').eval()
+        default = model(timed=False,sync=False,cust=False,comp_arr=[]).to('cuda').eval()
+        comp = torch.compile(model(timed=False,sync=False,cust=False,comp_arr=[])).to('cuda').eval()
+        cust = model(timed=False,sync=False,cust=False,comp_arr=config).to('cuda').eval()
 
         defaults = []
         comps = []

@@ -143,3 +143,35 @@ def density_plot_all(data, var: str, title=""):
     plt.axvline(1, color='red', linestyle="--")
     plt.title(title)
     plt.savefig("figs/"+title.replace(" ","_"), bbox_inches='tight')
+
+def plot_sublayer_times():
+    file_path = 'layertimes.txt'
+    
+    def read_data(file_path):
+        with open(file_path, 'r') as file:
+            raw_data = file.read().strip().split('\n\n')
+        data_sets = [np.array([list(map(float, line.split())) for line in section.split('\n')]) for section in raw_data]
+        return data_sets
+
+    def create_bar_plot(data, index, modelname):
+        x = np.arange(data.shape[0])
+        width = 0.25
+
+        fig, ax = plt.subplots()
+        bars1 = ax.bar(x - width, data[:, 0], width, label='interpreted')
+        bars2 = ax.bar(x, data[:, 1], width, label='compiled')
+        bars3 = ax.bar(x + width, data[:, 2], width, label='custom')
+
+        ax.set_xlabel('Layer')
+        ax.set_ylabel('Runtime [ns]')
+        ax.set_xticks(x)
+        ax.legend()
+
+        plt.title(modelname)
+        plt.savefig(f'figs/subtimebars/{modelname}_subtimebar.png')
+        plt.close()
+
+    data_sets = read_data(file_path)
+    modelnames = ['resnet','googlenet','densenet','squeezenet','alexnet','mobilenetv2']
+    for i, data in enumerate(data_sets):
+        create_bar_plot(data, i, modelnames[i])
