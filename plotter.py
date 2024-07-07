@@ -1,5 +1,6 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 from util import *
 import numpy as np
 
@@ -145,6 +146,9 @@ def density_plot_all(data, var: str, title=""):
     plt.savefig("figs/"+title.replace(" ","_"), bbox_inches='tight')
 
 def plot_sublayer_times():
+    font = {'size'   : 10}
+    
+    plt.rc('font', **font)
     file_path = 'layertimes.txt'
     
     def read_data(file_path):
@@ -166,9 +170,13 @@ def plot_sublayer_times():
         ax.set_ylabel('Runtime [ns]')
         ax.set_xticks(x)
         ax.legend()
+        formatter = ScalarFormatter(useMathText=True)
+        formatter.set_scientific(True)
+        formatter.set_powerlimits((0, 0))
+        ax.yaxis.set_major_formatter(formatter)
 
-        plt.title(modelname)
-        plt.savefig(f'figs/subtimebars/{modelname}_subtimebar.png')
+        #plt.title(modelname)
+        plt.savefig(f'figs/subtimebars/{modelname}_subtimebar.pdf')
         plt.close()
 
     data_sets = read_data(file_path)
